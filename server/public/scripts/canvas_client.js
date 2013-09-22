@@ -11,17 +11,17 @@ var geometry = {
     goal_width: 70.,
     goal_depth: 18.,
     robot_radius: 15,
+    ball_radius: 2
 };
 
 var colors = {
     dark_green: "#008000",
     yellow: "#FFFF00",
+    orange: "#FFBB00",
     blue: "#0000FF",
     white: "#FFFFFF",
     black: "#000000",
 };
-
-var robots = []
 
 function drawField()
 {
@@ -178,19 +178,36 @@ function drawRobots(robots)
     );
 }
 
-// Run once DOM is ready.
+function drawBalls(balls)
+{
+    balls.forEach(
+        function(ball) {
+            canvas.drawArc({
+                    // Todo: change this
+                    fillStyle: colors.orange,
+                    x: ball.x, 
+                    y: ball.y,
+                    radius: geometry.ball_radius,
+                }
+            );
+        }
+    );
+}
+// Run once DOM is ready. Setup socket events and fire away.
 $(function () {
     var socket = io.connect();
-
     canvas = $('#main_canvas');
     drawField();
+
     socket.on(
         'ssl_packet',
         function(data) {
             drawField();
             drawRobots(data.robots);
+            drawBalls(data.balls);
         }
     );
 
-    //socket.emit('ssl_packet', {robots:[ {x: 10, y: 20, color: colors.blue}]});
+    //socket.emit('ssl_packet', {robots:[ {x: 10, y: 20, color: colors.blue}],
+    //                           balls: [ {x: 50, y: 60 },{x: 250, y: 90 } ]});
 });
