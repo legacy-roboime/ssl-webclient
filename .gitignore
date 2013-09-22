@@ -11,4 +11,6 @@ pids
 logs
 results
 
+*.sw*
+
 npm-debug.log
