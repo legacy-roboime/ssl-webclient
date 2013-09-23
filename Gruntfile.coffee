@@ -37,7 +37,7 @@ module.exports = (grunt) ->
 
     watch:
       server:
-        files: ["src/server.coffee"]
+        files: ["src/**/*.coffee"]
         tasks: ["develop:server"]
         options:
           nospawn: true
@@ -48,7 +48,7 @@ module.exports = (grunt) ->
 
       app:
         files: ["app/**/*"]
-        tasks: ["coffee", "jade"]
+        tasks: ["app"]
         options:
           livereload: true
 
@@ -70,6 +70,12 @@ module.exports = (grunt) ->
         options:
           sourceMap: true
 
+    copy:
+      app:
+        expand: true
+        src: "app/**/*.coffee"
+        dest: "public/"
+
     jade:
       app:
         options:
@@ -79,6 +85,7 @@ module.exports = (grunt) ->
 
 
   # Default task is compiling
-  grunt.registerTask "default", ["bower", "coffee", "jade"]
+  grunt.registerTask "app", ["coffee", "jade", "copy"]
+  grunt.registerTask "default", ["bower", "app"]
   grunt.registerTask "run", ["default", "develop:server", "watch"]
   grunt.registerTask "tunneler", ["develop:tunneler", "watch:tunneler"]
