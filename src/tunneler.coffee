@@ -23,36 +23,43 @@ ref_builder = protobuf.protoFromFile("src/protos/referee.proto")
 Wrapper = builder.build("SSL_WrapperPacket")
 Referee = ref_builder.build("SSL_Referee")
 
-socket = io.connect("http://#{http.address}/", port: http.port)
-vision_client = dgram.createSocket("udp4")
-referee_client = dgram.createSocket("udp4")
+tunneler = (socket) ->
+  vision_client = dgram.createSocket("udp4")
 
-vision_client.on "listening", ->
-  vision_client.setBroadcast true
-  vision_client.setMulticastTTL 128
-  vision_client.addMembership vision.address
-  console.log "Listening #{vision.address}:#{vision.port} ..."
+  vision_client.on "listening", ->
+    vision_client.setBroadcast true
+    vision_client.setMulticastTTL 128
+    vision_client.addMembership vision.address
+    console.log "Listening #{vision.address}:#{vision.port} ..."
 
-vision_client.on "message", (message, remote) ->
-  wrapper = Wrapper.decode(message)
-  if debug
-    console.log "received message from #{remote}:"
-    console.log wrapper
-  socket.emit "ssl_packet", wrapper
+  vision_client.on "message", (message, remote) ->
+    wrapper = Wrapper.decode(message)
+    if debug
+      console.log "received message from #{remote.address}:"
+      console.log wrapper
+    socket.emit "ssl_packet", wrapper
 
-vision_client.bind(vision.port)
+  vision_client.bind(vision.port)
 
-referee_client.on "listening", ->
-  referee_client.setBroadcast true
-  referee_client.setMulticastTTL 128
-  referee_client.addMembership referee.address
-  console.log "Listening #{referee.address}:#{referee.port} ..."
+  referee_client = dgram.createSocket("udp4")
 
-referee_client.on "message", (message, remote) ->
-  wrapper = Referee.decode(message)
-  if debug
-    console.log "received message from #{remote}:"
-    console.log wrapper
-  socket.emit "ssl_refbox_packet", wrapper
+  referee_client.on "listening", ->
+    referee_client.setBroadcast true
+    referee_client.setMulticastTTL 128
+    referee_client.addMembership referee.address
+    console.log "Listening #{referee.address}:#{referee.port} ..."
 
-referee_client.bind(referee.port)
+  referee_client.on "message", (message, remote) ->
+    wrapper = Referee.decode(message)
+    if debug
+      console.log "received message from #{remote.address}:"
+      console.log wrapper
+    socket.emit "ssl_refbox_packet", wrapper
+
+  referee_client.bind(referee.port)
+
+module.exports = tunneler
+
+if module is require.main
+  # connect to the server to feed it
+  tunneler io.connect("http://#{http.address}/", port: http.port)

@@ -26,28 +26,8 @@ io.set "log level", 1
 
 # this is so the server is also a local vision listener
 if config.self_tunnel
-  dgram = require("dgram")
-  protobuf = require("protobufjs")
-  {vision} = config
-
-  builder = protobuf.protoFromFile("src/protos/messages_robocup_ssl_wrapper.proto")
-  decode = builder.build("SSL_WrapperPacket").decode
-  client = dgram.createSocket("udp4")
-
-  client.on "listening", ->
-    client.setBroadcast true
-    client.setMulticastTTL 128
-    client.addMembership vision.address
-    console.log "Listening #{vision.address}:#{vision.port} ..."
-
-  client.on "message", (message, remote) ->
-    packet = decode(message)
-    if debug
-      console.log "received message from #{remote}:"
-      console.log packet
-    io.sockets.emit "ssl_packet", packet
-
-  client.bind(vision.port)
+  tunneler = require("./tunneler")
+  tunneler io.sockets
 
 io.sockets.on "connection", (socket) ->
 
