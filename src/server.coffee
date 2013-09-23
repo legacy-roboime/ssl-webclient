@@ -19,7 +19,7 @@ socketio = require("socket.io")
 
 app = express()
 app.use express.static(join(__dirname, "..", "public"))
-app.set "views", join(__dirname, "views")
+app.set "views", join(__dirname, "..", "app")
 app.set "view engine", "jade"
 app.engine "jade", require("jade").__express
 

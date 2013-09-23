@@ -35,34 +35,28 @@ module.exports = (grunt) ->
 
     develop:
       server:
-        file: "server/server.coffee"
+        file: "src/server.coffee"
         cmd: "coffee"
       tunneler:
-        file: "ssl_tunneler/ssl_vision_client.coffee"
+        file: "src/tunneler.coffee"
         cmd: "coffee"
 
     watch:
       server:
-        files: ["server/**/*.coffee"]
+        files: ["src/server.coffee"]
         tasks: ["develop:server"]
         options:
           nospawn: true
 
-      views:
-        files: ["server/views/**/*"]
+      tunneler:
+        files: ["src/tunneler.coffee", "src/proto/**"]
+        task: ["develop:tunneler"]
+
+      app:
+        files: ["app/**/*"]
         tasks: ["compile"]
         options:
           livereload: true
-
-      client:
-        files: ["client/**/*"]
-        tasks: ["copy"]
-        options:
-          livereload: true
-
-      tunneler:
-        files: ["ssl_tunneler/**"]
-        task: ["develop:tunneler"]
 
     bower:
       install:
@@ -78,7 +72,7 @@ module.exports = (grunt) ->
     coffee:
       client:
         files:
-          "public/client.js": "client/**/*.coffee"
+          "public/client.js": "app/**/*.coffee"
         options:
           sourceMap: true
 

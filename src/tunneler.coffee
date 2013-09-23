@@ -16,9 +16,8 @@ dgram = require("dgram")
 protobuf = require("protobufjs")
 {http, ssl, debug} = require("config")
 
-#var io = require('socket.io');
 io = require("socket.io-client")
-builder = protobuf.protoFromFile("ssl_tunneler/protos/messages_robocup_ssl_wrapper.proto")
+builder = protobuf.protoFromFile("src/protos/messages_robocup_ssl_wrapper.proto")
 Wrapper = builder.build("SSL_WrapperPacket")
 socket = io.connect("http://#{http.address}/", port: http.port)
 client = dgram.createSocket("udp4")
