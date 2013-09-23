@@ -1,16 +1,23 @@
 http:
-  address: "0.0.0.0"
+  address: "127.0.0.1"
   port: 9001
 
 # by default debugging is off
 debug: false
 
+# wether this server is also an ssl tunneler to itself
 self_tunnel: false
+
+# official ssl parameters
+# commonly used ports are listed respectively
+# to use them customize your development config
 
 vision:
   address: "224.5.23.2"
-  port: 11002
+  port: 10002
+  #port: 11002
 
 referee:
   address: "224.5.23.1"
-  port: 11003
+  port: 10003
+  #port: 11003
