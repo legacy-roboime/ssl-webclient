@@ -10,7 +10,7 @@ Getting Started
 
 - [node.js](http://nodejs.org/)
 - grunt-cli: `npm install -g grunt-cli`
-- coffee: `npm install -g coffee`
+- coffee-script: `npm install -g coffee-script`
 - other deps: `npm install`
 
 ### Usage
