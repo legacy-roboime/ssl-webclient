@@ -2,10 +2,10 @@
 html
     head
         title The game is on!
-        script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
+        script(src='/lib/js/jquery.min.js')
+        script(src='/lib/js/jcanvas.min.js')
         script(src='/socket.io/socket.io.js')
-        script(src='/scripts/jcanvas.min.js')
-        script(src='/scripts/canvas_client.js')
+        script(src='/client.js')
     body
         //- #game_name #{game_id}
         canvas(id='main_canvas', width='700', height='500') Your browser doesn't support canvas. Your browser sucks, by the way.

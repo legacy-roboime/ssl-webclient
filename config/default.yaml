@@ -1,0 +1,7 @@
+http:
+  address: "127.0.0.1"
+  port: 9001
+
+ssl:
+  address: "224.5.23.2"
+  port: 11002

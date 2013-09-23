@@ -12,19 +12,34 @@
     "name": "Renan Gemignani",
     "email": "renan.gemignani@gmail.com"
   },
+  "license": "AGPL",
+  "home": "https://github.com/roboime/ssl-vision-webclient",
   "repository": {
     "type": "git",
     "url": "https://github.com/roboime/ssl-vision-webclient"
   },
+  "bugs": {
+    "url": "https://github.com/roboime/ssl-vision-webclient/issues"
+  },
   "dependencies": {
-    "socket.io": "*",
-    "socket.io-client": "*",
-    "express": ">= 3.0.0",
-    "jade": "*",
-    "protobufjs": "*"
+    "socket.io": "~0.9.16",
+    "socket.io-client": "~0.9.16",
+    "express": "~3.4.0",
+    "jade": "~0.35.0",
+    "protobufjs": "~1.1.6",
+    "config": "~0.4.30",
+    "yaml": "~0.2.3"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-copy": "~0.4.1",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-watch": "~0.5.1",
+    "grunt-develop": "~0.2.2",
+    "grunt-bower-task": "~0.3.2",
+    "grunt-contrib-coffee": "~0.7.0"
   },
   "engines": {
-    "node": ">= 0.10.18"
-  },
-  "readmeFilename": "README.md"
+    "node": ">= 0.10.0"
+  }
 }

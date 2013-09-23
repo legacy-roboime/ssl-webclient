@@ -1,0 +1,19 @@
+{
+  "name": "ssl-vision-webclient",
+  "dist": ["./dist/**"],
+  "ignore": [
+      "**/.*"
+  ],
+  "dependencies": {
+    "jquery": "~1.9.0",
+    "jcanvas": "git://github.com/caleb531/jcanvas.git"
+  },
+  "exportsOverride": {
+    "jquery": {
+      "js": "jquery.*"
+    },
+    "jcanvas": {
+      "js": "*.js"
+    }
+  }
+}
