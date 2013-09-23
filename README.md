@@ -1,7 +1,7 @@
 ssl-vision-webclient
 ====================
 
-Connects to an SSL vision multicast socket and pushes this information to a server with websockets.
+ssl-vision-webclient is a multi-user supporting web-based application for streaming and viewing Small Size League robot football games written using node.js.
 
 Getting Started
 ---------------
@@ -17,7 +17,7 @@ Getting Started
 
     grunt run
 
-If you opt not to run the server a tunneler, the following will be needed.
+Unless you opt to run the server as the referee client, the following will also be needed. Remember that the tunneler must be in the same network as the ssl-vision and ssl-refbox boxes.
 
     grunt tunneler
 
