@@ -7,5 +7,17 @@ html
         script(src='/socket.io/socket.io.js')
         script(src='/client.js')
     body
-        //- #game_name #{game_id}
+        #referee
+            #time_left_wrapper Time left: 
+                span#time_left inf
+            #teams
+                #team_yellow Yellow: 
+                    span#team_name undefined 
+                    #score_wrapper Score:
+                        #score 0
+                #team_blue Blue: 
+                    span#team_name undefined 
+                    #score_wrapper Score:
+                        #score 0
+
         canvas(id='main_canvas', width='700', height='500') Your browser doesn't support canvas. Your browser sucks, by the way.

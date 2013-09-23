@@ -5,8 +5,12 @@ http:
 # by default debugging is off
 debug: false
 
-self_tunnel: true
+self_tunnel: false
 
 vision:
   address: "224.5.23.2"
   port: 11002
+
+referee:
+  address: "224.5.23.1"
+  port: 11003

@@ -170,6 +170,13 @@ drawBalls = (balls) ->
       y: ball.y / geometry.scaling + geometry.width / 2 + geometry.border
       radius: geometry.ball_radius
 
+updateRefereeState = (referee) ->
+  # Time voodoo: converting ticks to minutes:seconds
+  $('#time_left').html "#{~~(referee.stage_time_left / (60 * 1000000))}:#{Math.abs(~~(referee.stage_time_left / 1000000)) % 60}" if referee.stage_time_left != null
+  $('#team_yellow #team_name').html referee.yellow.name
+  $('#team_yellow #score').html referee.yellow.score
+  $('#team_blue #team_name').html referee.blue.name
+  $('#team_blue #score').html referee.blue.score
 
 canvas = $("#main_canvas")
 geometry =
@@ -204,7 +211,10 @@ $ ->
   socket.on "ssl_packet", (packet) ->
     drawField()
     data = packet.detection
-    return  if typeof data is `undefined`
+    return if typeof data is `undefined`
     drawRobots data.robots_yellow, colors.yellow
     drawRobots data.robots_blue, colors.blue
     drawBalls data.balls
+
+  socket.on "ssl_refbox_packet", (packet) ->
+    updateRefereeState packet

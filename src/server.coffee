@@ -61,3 +61,10 @@ io.sockets.on "connection", (socket) ->
 
     # Forward packet to all the client sockets.
     io.sockets.emit "ssl_packet", packet
+
+  socket.on "ssl_refbox_packet", (packet) ->
+    if debug
+      console.log packet
+
+    # Forward packet to all the client sockets.
+    io.sockets.emit "ssl_refbox_packet", packet
