@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 
 dgram = require("dgram")
 protobuf = require("protobufjs")
-{http, ssl} = require("config")
+{http, ssl, debug} = require("config")
 
 #var io = require('socket.io');
 io = require("socket.io-client")
@@ -31,8 +31,9 @@ client.on "listening", ->
 
 client.on "message", (message, remote) ->
   wrapper = Wrapper.decode(message)
-  console.log "received message from #{remote}:"
-  console.log wrapper
+  if debug
+    console.log "received message from #{remote}:"
+    console.log wrapper
   socket.emit "ssl_packet", wrapper
 
 client.bind(ssl.port)

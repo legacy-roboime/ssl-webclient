@@ -12,10 +12,10 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 ###
 
-{join} = require("path")
 express = require("express")
-url = require("url")
-{http} = require("config")
+socketio = require("socket.io")
+{join} = require("path")
+{http, debug} = require("config")
 
 app = express()
 app.use express.static(join(__dirname, "..", "public"))
@@ -26,20 +26,22 @@ app.engine "jade", require("jade").__express
 app.get "/", (request, response) ->
   response.render "list_ongoing.jade"
 
-app.get "/view_game", (request, response) ->
-  query = url.parse(request.url, true).query
+app.get "/game/:id", (request, response) ->
   response.render "canvas.jade",
-    game_id: query.id
+    game_id: request.params.id
 
-io = require("socket.io").listen(app.listen(http.port, http.address))
+io = socketio.listen(app.listen(http.port, http.address))
+io.set "log level", 1
+
 io.sockets.on "connection", (socket) ->
 
-  # Right now, we only have one game per instance, so all 
+  # Right now, we only have one game per instance, so all
   # connected sockets get to see it.
 
   # TODO: Implement separation of sockets per game
   socket.on "ssl_packet", (packet) ->
-    console.log packet
+    if debug
+      console.log packet
 
     # Forward packet to all the client sockets.
     io.sockets.emit "ssl_packet", packet

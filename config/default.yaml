@@ -5,3 +5,6 @@ http:
 ssl:
   address: "224.5.23.2"
   port: 11002
+
+# by default debugging is off
+debug: false
