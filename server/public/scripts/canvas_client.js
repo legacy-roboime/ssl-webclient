@@ -11,7 +11,8 @@ var geometry = {
     goal_width: 70.,
     goal_depth: 18.,
     robot_radius: 15,
-    ball_radius: 2
+    ball_radius: 2,
+    scaling: 10,
 };
 
 var colors = {
@@ -162,15 +163,15 @@ function drawField()
 
 }
 
-function drawRobots(robots)
+function drawRobots(robots, color)
 {
     robots.forEach(
         function(robot) {
             canvas.drawArc({
                     // Todo: change this
-                    fillStyle: robot.color,
-                    x: robot.x, 
-                    y: robot.y,
+                    fillStyle: color,
+                    x: - robot.x / geometry.scaling + geometry.length / 2 + geometry.border, 
+                    y: robot.y / geometry.scaling + geometry.width / 2 + geometry.border,
                     radius: geometry.robot_radius,
                 }
             );
@@ -185,8 +186,8 @@ function drawBalls(balls)
             canvas.drawArc({
                     // Todo: change this
                     fillStyle: colors.orange,
-                    x: ball.x, 
-                    y: ball.y,
+                    x: - ball.x/ geometry.scaling + geometry.length / 2 + geometry.border, 
+                    y: ball.y/ geometry.scaling + geometry.width / 2 + geometry.border,
                     radius: geometry.ball_radius,
                 }
             );
@@ -201,9 +202,15 @@ $(function () {
 
     socket.on(
         'ssl_packet',
-        function(data) {
+        function(packet) {
             drawField();
-            drawRobots(data.robots);
+            data = packet.detection;
+            if (typeof data === undefined)
+            {
+                return;
+            }
+            drawRobots(data.robots_yellow, colors.yellow);
+            drawRobots(data.robots_blue, colors.blue);
             drawBalls(data.balls);
         }
     );
