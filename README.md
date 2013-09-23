@@ -3,6 +3,26 @@ ssl-vision-webclient
 
 Connects to an SSL vision multicast socket and pushes this information to a server with websockets.
 
+Getting Started
+---------------
+
+### Requirements
+
+- [node.js](http://nodejs.org/)
+- grunt-cli: `npm install -g grunt-cli`
+- coffee: `npm install -g coffee`
+- other deps: `npm install`
+
+### Usage
+
+Server:
+
+    grunt run
+
+SSL Tunneler:
+
+    grunt tunneler
+
 License
 -------
 
