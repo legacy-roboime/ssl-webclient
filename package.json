@@ -1,0 +1,30 @@
+{
+  "name": "ssl-vision-webclient",
+  "description": "WebSocket client for SSL vision.",
+  "version": "0.1.0-beta",
+  "main": "./server/server.js",
+  "homepage": "https://github.com/roboime/ssl-vision-webclient",
+  "keywords": [
+    "websocket",
+    "ssl"
+  ],
+  "author": {
+    "name": "Renan Gemignani",
+    "email": "renan.gemignani@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/roboime/ssl-vision-webclient"
+  },
+  "dependencies": {
+    "socket.io": "*",
+    "socket.io-client": "*",
+    "express": "*",
+    "jade": "*"
+  },
+  "engines": {
+    "node": ">= 0.4.0"
+  },
+  "readmeFilename": "README.md",
+  "_id": "ssl-vision-webclient@0.9.16"
+}
