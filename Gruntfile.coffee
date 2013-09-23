@@ -27,13 +27,6 @@ module.exports = (grunt) ->
   grunt.initConfig
     clean: ["public"]
 
-    #copy:
-    #  assets:
-    #    expand: true
-    #    cwd: "assets/"
-    #    src: ["**"]
-    #    dest: "static/assets/"
-
     develop:
       server:
         file: "src/server.coffee"
