@@ -5,6 +5,8 @@ http:
 # by default debugging is off
 debug: false
 
-ssl:
+self_tunnel: true
+
+vision:
   address: "224.5.23.2"
   port: 11002

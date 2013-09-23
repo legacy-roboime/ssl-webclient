@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 
 dgram = require("dgram")
 protobuf = require("protobufjs")
-{http, ssl, debug} = require("config")
+{http, vision, debug} = require("config")
 
 io = require("socket.io-client")
 builder = protobuf.protoFromFile("src/protos/messages_robocup_ssl_wrapper.proto")
@@ -25,8 +25,8 @@ client = dgram.createSocket("udp4")
 client.on "listening", ->
   client.setBroadcast true
   client.setMulticastTTL 128
-  client.addMembership ssl.address
-  console.log "Listening #{ssl.address}:#{ssl.port} ..."
+  client.addMembership vision.address
+  console.log "Listening #{vision.address}:#{vision.port} ..."
 
 client.on "message", (message, remote) ->
   wrapper = Wrapper.decode(message)
@@ -35,4 +35,4 @@ client.on "message", (message, remote) ->
     console.log wrapper
   socket.emit "ssl_packet", wrapper
 
-client.bind(ssl.port)
+client.bind(vision.port)

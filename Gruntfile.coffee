@@ -48,7 +48,7 @@ module.exports = (grunt) ->
 
       app:
         files: ["app/**/*"]
-        tasks: ["compile", "coffee", "jade"]
+        tasks: ["coffee", "jade"]
         options:
           livereload: true
 
