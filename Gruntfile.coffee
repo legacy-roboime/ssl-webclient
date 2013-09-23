@@ -22,6 +22,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks "grunt-develop"
   grunt.loadNpmTasks "grunt-bower-task"
   grunt.loadNpmTasks "grunt-contrib-coffee"
+  grunt.loadNpmTasks "grunt-contrib-jade"
 
   grunt.initConfig
     clean: ["public"]
@@ -54,7 +55,7 @@ module.exports = (grunt) ->
 
       app:
         files: ["app/**/*"]
-        tasks: ["compile"]
+        tasks: ["compile", "coffee", "jade"]
         options:
           livereload: true
 
@@ -70,14 +71,21 @@ module.exports = (grunt) ->
           cleanBowerDir: false
 
     coffee:
-      client:
+      app:
         files:
           "public/client.js": "app/**/*.coffee"
         options:
           sourceMap: true
 
+    jade:
+      app:
+        options:
+          pretty: true
+        files:
+          "public/index.html": "app/app.jade"
+
 
   # Default task is compiling
-  grunt.registerTask "default", ["bower", "coffee"]
+  grunt.registerTask "default", ["bower", "coffee", "jade"]
   grunt.registerTask "run", ["default", "develop:server", "watch"]
   grunt.registerTask "tunneler", ["develop:tunneler", "watch:tunneler"]

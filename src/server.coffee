@@ -19,16 +19,6 @@ socketio = require("socket.io")
 
 app = express()
 app.use express.static(join(__dirname, "..", "public"))
-app.set "views", join(__dirname, "..", "app")
-app.set "view engine", "jade"
-app.engine "jade", require("jade").__express
-
-app.get "/", (request, response) ->
-  response.render "list_ongoing.jade"
-
-app.get "/game/:id", (request, response) ->
-  response.render "canvas.jade",
-    game_id: request.params.id
 
 io = socketio.listen(app.listen(http.port, http.address))
 io.set "log level", 1
