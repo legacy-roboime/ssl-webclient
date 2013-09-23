@@ -1,7 +1,7 @@
 ssl-vision-webclient
 ====================
 
-ssl-vision-webclient is a multi-user supporting web-based application for streaming and viewing Small Size League robot football games written using node.js.
+ssl-vision-webclient is a multi-user supporting web-based application for streaming and viewing RoboCup Small Size League robot football games.
 
 Getting Started
 ---------------
