@@ -82,7 +82,7 @@ module.exports = (grunt) ->
         options:
           pretty: true
         files:
-          "public/index.html": "app/app.jade"
+          "public/index.html": "app/index.jade"
 
 
   # Default task is compiling
