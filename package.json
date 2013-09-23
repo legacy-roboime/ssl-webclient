@@ -19,12 +19,12 @@
   "dependencies": {
     "socket.io": "*",
     "socket.io-client": "*",
-    "express": "*",
-    "jade": "*"
+    "express": ">= 3.0.0",
+    "jade": "*",
+    "protobufjs": "*"
   },
   "engines": {
-    "node": ">= 0.4.0"
+    "node": ">= 0.10.18"
   },
-  "readmeFilename": "README.md",
-  "_id": "ssl-vision-webclient@0.9.16"
+  "readmeFilename": "README.md"
 }

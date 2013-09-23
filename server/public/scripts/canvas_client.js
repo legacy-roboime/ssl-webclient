@@ -181,6 +181,16 @@ function drawRobots(robots, color)
                     end: orientation - geometry.robot_kicker_arc,
                 }
             );
+            canvas.drawText({
+                fillStyle: colors.white,
+                strokeStyle: colors.black,
+                strokeWidth: 1,
+                x: x,
+                y: y,
+                fontSize: 8,
+                fontFamily: "Verdana, sans-serif",
+                text: robot.robot_id,
+            });
         }
     );
 }
@@ -220,7 +230,4 @@ $(function () {
             drawBalls(data.balls);
         }
     );
-
-    //socket.emit('ssl_packet', {robots:[ {x: 10, y: 20, color: colors.blue}],
-    //                           balls: [ {x: 50, y: 60 },{x: 250, y: 90 } ]});
 });
