@@ -23,22 +23,16 @@ Wrapper = builder.build("SSL_WrapperPacket")
 socket = io.connect("http://#{http.address}/", port: http.port)
 client = dgram.createSocket("udp4")
 
-#client.on "listening", ->
-#  address = client.address()
-#  client.setBroadcast true
-#  client.setMulticastTTL 128
-#  client.addMembership ssl.address
-#  console.log "Listening #{ssl.address}:#{ssl.port}..."
-
-#client.bind ssl.port, "localhost", ->
-client.bind ssl.port, "127.0.0.1", ->
-  address = client.address()
+client.on "listening", ->
   client.setBroadcast true
   client.setMulticastTTL 128
-  client.addMembership ssl.address, "127.0.0.1"
-  console.log "Listening #{ssl.address}:#{ssl.port}..."
+  client.addMembership ssl.address
+  console.log "Listening #{ssl.address}:#{ssl.port} ..."
 
 client.on "message", (message, remote) ->
   wrapper = Wrapper.decode(message)
+  console.log "received message from #{remote}:"
   console.log wrapper
   socket.emit "ssl_packet", wrapper
+
+client.bind(ssl.port)
