@@ -15,11 +15,9 @@ Getting Started
 
 ### Usage
 
-Server:
-
     grunt run
 
-SSL Tunneler:
+If you opt not to run the server a tunneler, the following will be needed.
 
     grunt tunneler
 
