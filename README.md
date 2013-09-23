@@ -23,6 +23,9 @@ SSL Tunneler:
 
     grunt tunneler
 
+You can configure your local preferences by creating a `config/development.yaml`, (or `.json`, `.js`) and
+adding what would otherwise be altered on `config/default.yaml`.
+
 License
 -------
 
