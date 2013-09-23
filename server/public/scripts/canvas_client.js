@@ -3,16 +3,17 @@ var canvas = $('#main_canvas');
 var geometry = {
     width: 400.,
     length: 600.,
-    border: 25.,
+    border: 50.,
     line_width: 2.,
     center_radius: 50.,
     defense_radius: 50.,
     defense_stretch: 35.,
     goal_width: 70.,
     goal_depth: 18.,
-    robot_radius: 15,
-    ball_radius: 2,
+    robot_radius: 9,
+    ball_radius: 2.15,
     scaling: 10,
+    robot_kicker_arc: 45.5,
 };
 
 var colors = {
@@ -167,12 +168,17 @@ function drawRobots(robots, color)
 {
     robots.forEach(
         function(robot) {
+            var orientation = 270 - robot.orientation / 3.14159265359878 * 180;
+            var x = - robot.x / geometry.scaling + geometry.length / 2 + geometry.border;
+            var y = robot.y / geometry.scaling + geometry.width / 2 + geometry.border;
             canvas.drawArc({
                     // Todo: change this
                     fillStyle: color,
-                    x: - robot.x / geometry.scaling + geometry.length / 2 + geometry.border, 
-                    y: robot.y / geometry.scaling + geometry.width / 2 + geometry.border,
+                    x: x, 
+                    y: y,
                     radius: geometry.robot_radius,
+                    start: orientation + geometry.robot_kicker_arc,
+                    end: orientation - geometry.robot_kicker_arc,
                 }
             );
         }
