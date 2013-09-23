@@ -8,10 +8,6 @@
     "websocket",
     "ssl"
   ],
-  "author": {
-    "name": "Renan Gemignani",
-    "email": "renan.gemignani@gmail.com"
-  },
   "license": "AGPL",
   "home": "https://github.com/roboime/ssl-vision-webclient",
   "repository": {
