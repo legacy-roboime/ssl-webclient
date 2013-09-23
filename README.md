@@ -17,7 +17,7 @@ Getting Started
 
     grunt run
 
-Unless you opt to run the server as the referee client, the following will also be needed. Remember that the tunneler must be in the same network as the ssl-vision and ssl-refbox boxes.
+Unless you opt to run the server as the vision/referee client, the following will also be needed. Remember that the tunneler (or, as it may be, the server) must be in the same network as the ssl-vision and ssl-refbox boxes.
 
     grunt tunneler
 
