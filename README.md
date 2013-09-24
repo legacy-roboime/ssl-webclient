@@ -1,4 +1,4 @@
-ssl-vision-webclient
+ssl-webclient
 ====================
 
 ssl-webclient is a multi-user supporting web-based application for streaming and viewing RoboCup Small Size League robot football games.
