@@ -1,5 +1,5 @@
 {
-  "name": "ssl-vision-webclient",
+  "name": "ssl-webclient",
   "dist": ["./dist/**"],
   "ignore": [
       "**/.*"

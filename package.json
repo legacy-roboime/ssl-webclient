@@ -1,5 +1,5 @@
 {
-  "name": "ssl-vision-webclient",
+  "name": "ssl-webclient",
   "description": "WebSocket client for SSL vision.",
   "version": "0.1.0-beta",
   "main": "./server/server.js",
