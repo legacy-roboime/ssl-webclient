@@ -1,0 +1,20 @@
+.yellow {
+  fill: #ff0;
+}
+.blue {
+  fill: #00f;
+}
+.orange {
+  fill: #fb0;
+}
+.grass {
+  fill: #080;
+}
+.white-line {
+  fill: none;
+  stroke: #fff;
+}
+.black-line {
+  fill: none;
+  stroke: #000;
+}

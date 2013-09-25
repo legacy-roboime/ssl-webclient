@@ -57,7 +57,7 @@ module.exports = (grunt) ->
         options:
           targetDir: "public/lib"
           layout: (type) ->
-            type
+            type or "misc"
           install: true
           verbose: false
           cleanTargetDir: true
@@ -71,9 +71,14 @@ module.exports = (grunt) ->
           sourceMap: true
 
     copy:
-      app:
+      app_src:
         expand: true
         src: "app/**/*.coffee"
+        dest: "public/"
+      app_css:
+        expand: true
+        cwd: "app/"
+        src: "**/*.css"
         dest: "public/"
 
     jade:
