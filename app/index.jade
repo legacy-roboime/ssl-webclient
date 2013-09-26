@@ -2,24 +2,28 @@ doctype 5
 html(lang="en")
   meta(charset="utf-8")
   title The game is on!
+  link(rel="stylesheet", href="/lib/css/bootstrap.min.css")
+  link(rel="stylesheet", href="/lib/css/bootstrap-theme.min.css")
   link(rel="stylesheet", href="/style.css")
-
-  #referee
-    #time_left_wrapper Time left:
-      span#time_left --
-    #teams
-      #team_yellow Yellow:
-        span#team_name --
-          #score_wrapper Score:
-            #score --
-        #team_blue Blue:
-          span#team_name --
-            #score_wrapper Score:
-              #score --
 
   #field
 
+  #info.container
+    ul.breadcrumb
+      li
+        span#team_blue
+          span.team_name --
+          &nbsp;
+          span.score.badge -
+        span &nbsp;&times;&nbsp;
+        span#team_yellow
+          span.score.badge -
+          &nbsp;
+          span.team_name --
+      li <span class="glyphicon glyphicon-time"></span> <span id=time_left>--</span>
+
   script(src="/lib/js/jquery.min.js")
+  script(src="/lib/js/bootstrap.min.js")
   script(src="/lib/js/d3.min.js")
   script(src="/socket.io/socket.io.js")
   script(src="/client.js")

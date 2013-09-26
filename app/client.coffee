@@ -12,15 +12,20 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 ###
 
+inner_width = 7200
+inner_height = 5200
+
 svg = do ->
   _svg = d3.select("#field").append("svg")
-    .attr("viewBox", "-3250 -2250 6500 4500")
+    .attr("viewBox", "-#{inner_width / 2} -#{inner_height / 2} #{inner_width} #{inner_height}")
     .attr("x", "50%")
     .attr("y", "50%")
-    .call(d3.behavior.zoom().scaleExtent([.75, 10]).on("zoom", ->
-      #TODO maybe limit the translation?
-      svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
-    ))
+    .call(d3.behavior.zoom()
+      .scaleExtent([.75, 10])
+      .on("zoom", ->
+        #TODO maybe limit the translation?
+        svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
+      ))
   #_svg.append("g")
   #  .append("rect")
   #  .classed("grass", true)
@@ -244,12 +249,26 @@ drawBalls = (balls) ->
     .remove()
 
 updateRefereeState = (referee) ->
+
+  pad = (n, width, z) ->
+    z = z || '0'
+    n = n + ''
+    if n.length >= width then n else new Array(width - n.length + 1).join(z) + n
+
   # Time voodoo: converting ticks to minutes:seconds
-  $('#time_left').html "#{~~(referee.stage_time_left / (60 * 1000000))}:#{Math.abs(~~(referee.stage_time_left / 1000000)) % 60}" if referee.stage_time_left != null
-  $('#team_yellow #team_name').html referee.yellow.name
-  $('#team_yellow #score').html referee.yellow.score
-  $('#team_blue #team_name').html referee.blue.name
-  $('#team_blue #score').html referee.blue.score
+  ticks_to_time = (ticks) ->
+    #TODO: time may be negative, ought to represent that
+    if ticks?
+      time = "#{~~(Math.abs(ticks) / (60 * 1000000))}:#{pad(Math.abs(~~(ticks / 1000000)) % 60, 2)}"
+      if ticks > 0 then time else "-#{time}"
+    else
+      "--:--"
+
+  $('#time_left').html ticks_to_time(referee.stage_time_left)
+  $('#team_yellow .team_name').html referee.yellow.name
+  $('#team_yellow .score').html referee.yellow.score
+  $('#team_blue .team_name').html referee.blue.name
+  $('#team_blue .score').html referee.blue.score
 
 # Run once DOM is ready. Setup socket events and fire away.
 $ ->

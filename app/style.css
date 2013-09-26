@@ -1,3 +1,15 @@
+#info.container {
+  padding-top: 5px
+}
+#info.container .breadcrumb {
+  display: inline-block;
+}
+#team_blue .team_name {
+  text-shadow: #88f 0 0 1px
+}
+#team_yellow .team_name {
+  text-shadow: #ff0 0 0 1px
+}
 #field {
   position: fixed;
   top: 0;
