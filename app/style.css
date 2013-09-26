@@ -15,20 +15,12 @@
 .blue {
   fill: #00f;
 }
-.orange {
+.ball {
   fill: #fb0;
 }
 .grass {
   fill: #080;
 }
-.white {
+.field-line {
   fill: #fff;
-}
-.white-line {
-  fill: none;
-  stroke: #fff;
-}
-.black-line {
-  fill: none;
-  stroke: #000;
 }

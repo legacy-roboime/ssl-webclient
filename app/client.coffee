@@ -14,9 +14,9 @@ GNU Affero General Public License for more details.
 
 svg = do ->
   _svg = d3.select("#field").append("svg")
-    #.attr("width", 650)
-    #.attr("height", 450)
-    .attr("viewBox", "0 0 6500 4500")
+    .attr("viewBox", "-3250 -2250 6500 4500")
+    .attr("x", "50%")
+    .attr("y", "50%")
     .call(d3.behavior.zoom().scaleExtent([.75, 10]).on("zoom", ->
       #TODO maybe limit the translation?
       svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
@@ -59,143 +59,189 @@ default_geometry_field =
 #  scaling: 100
 #  robot_kicker_arc: 455
 
+initField = ->
+  svg.append("path").classed("field-line", true)
+  svg.append("path").classed("left-goal", true)
+  svg.append("path").classed("right-goal", true)
+
 drawField = (field_geometry, is_blue_left=true) ->
 
-  g = field_geometry
-  svg.append("path")
-    .classed("white", true)
-    .classed("field-lines", true)
-    .attr("d",
-      # the outsite perimeter
-      """
-      m #{g.boundary_width} #{g.boundary_width}
-      h #{g.field_length}
-      v #{g.field_width}
-      h-#{g.field_length}
-      v-#{g.field_width}
-      m #{g.line_width} #{g.line_width}
-      v #{g.field_width - 2 * g.line_width}
-      h #{g.field_length - 2 * g.line_width}
-      v-#{g.field_width - 2 * g.line_width}
-      h-#{g.field_length - 2 * g.line_width}
+  field_path = (g) ->
+    path = ""
+    path += # outer rectangle
+    """
+    M #{-g.field_length / 2} #{-g.field_width / 2}
+    h #{g.field_length}
+    v #{g.field_width}
+    h-#{g.field_length}
+    v-#{g.field_width}
+    m #{g.line_width} #{g.line_width}
+    v #{g.field_width - 2 * g.line_width}
+    h #{g.field_length - 2 * g.line_width}
+    v-#{g.field_width - 2 * g.line_width}
+    h-#{g.field_length - 2 * g.line_width}
+    """
+    path += # middle line
+    """
+    M #{g.line_width / 2}-#{g.field_width / 2}
+    v #{g.field_width}
+    h-#{g.line_width}
+    v-#{g.field_width}
+    h #{g.line_width}
+    """
+    path += # center circle
+    """
+    M 0-#{g.center_circle_radius}
+    a #{g.center_circle_radius} #{g.center_circle_radius} 0 0 1 0 #{2 * g.center_circle_radius}
+    a #{g.center_circle_radius} #{g.center_circle_radius} 0 0 1 0-#{2 * g.center_circle_radius}
+    m 0 #{g.line_width}
+    a #{g.center_circle_radius - g.line_width} #{g.center_circle_radius - g.line_width} 0 0 0 0 #{2 * (g.center_circle_radius - g.line_width)}
+    a #{g.center_circle_radius - g.line_width} #{g.center_circle_radius - g.line_width} 0 0 0 0-#{2 * (g.center_circle_radius - g.line_width)}
+    """
+    path += # central spot
+    """
+    M 0-#{1.5 * g.line_width}
+    a #{1.5 * g.line_width} #{1.5 * g.line_width} 0 0 1 0 #{3 * g.line_width}
+    a #{1.5 * g.line_width} #{1.5 * g.line_width} 0 0 1 0-#{3 * g.line_width}
+    """
+    path += # left defense area
+    """
+    M-#{g.field_length / 2}-#{g.defense_radius + g.defense_stretch / 2}
+    a #{g.defense_radius} #{g.defense_radius} 0 0 1 #{g.defense_radius} #{g.defense_radius}
+    v #{g.defense_stretch}
+    a #{g.defense_radius} #{g.defense_radius} 0 0 1-#{g.defense_radius} #{g.defense_radius}
+    v-#{g.line_width}
+    a #{g.defense_radius - g.line_width} #{g.defense_radius - g.line_width} 0 0 0 #{g.defense_radius - g.line_width}-#{g.defense_radius - g.line_width}
+    v-#{g.defense_stretch}
+    a #{g.defense_radius - g.line_width} #{g.defense_radius - g.line_width} 0 0 0-#{g.defense_radius - g.line_width}-#{g.defense_radius - g.line_width}
+    """
+    path += # right defense area
+    """
+    M #{g.field_length / 2} #{g.defense_radius + g.defense_stretch / 2}
+    a #{g.defense_radius} #{g.defense_radius} 0 0 1-#{g.defense_radius}-#{g.defense_radius}
+    v-#{g.defense_stretch}
+    a #{g.defense_radius} #{g.defense_radius} 0 0 1 #{g.defense_radius}-#{g.defense_radius}
+    v #{g.line_width}
+    a #{g.defense_radius - g.line_width} #{g.defense_radius - g.line_width} 0 0 0-#{g.defense_radius - g.line_width} #{g.defense_radius - g.line_width}
+    v #{g.defense_stretch}
+    a #{g.defense_radius - g.line_width} #{g.defense_radius - g.line_width} 0 0 0 #{g.defense_radius - g.line_width} #{g.defense_radius - g.line_width}
+    """
+    path += # left penalty spot
+    """
+    M-#{g.field_length / 2 - g.penalty_spot_from_field_line_dist - g.line_width} 0
+    a #{1 * g.line_width} #{1 * g.line_width} 0 0 1 #{2 * g.line_width} 0
+    a #{1 * g.line_width} #{1 * g.line_width} 0 0 1-#{2 * g.line_width} 0
+    """
+    path += # right penalty spot
+    """
+    M #{g.field_length / 2 - g.penalty_spot_from_field_line_dist - g.line_width} 0
+    a #{1 * g.line_width} #{1 * g.line_width} 0 0 1 #{2 * g.line_width} 0
+    a #{1 * g.line_width} #{1 * g.line_width} 0 0 1-#{2 * g.line_width} 0
+    """
+    path += # close it
+    """
+    z
+    """
+    # done
+    path
 
-      M #{g.boundary_width + g.field_length / 2 + g.line_width / 2} #{g.boundary_width}
-      v #{g.field_width}
-      h-#{g.line_width}
-      v-#{g.field_width}
-      h #{g.line_width}
+  svg.select(".field-line")
+    .datum(field_geometry)
+    .transition()
+    .duration(750)
+    .attr("d", field_path)
 
-      M #{g.boundary_width + g.field_length / 2} #{g.boundary_width + g.field_width / 2 - g.center_circle_radius}
-      a #{g.center_circle_radius} #{g.center_circle_radius} 0 0 1 0 #{2 * g.center_circle_radius}
-      a #{g.center_circle_radius} #{g.center_circle_radius} 0 0 1 0-#{2 * g.center_circle_radius}
-      m 0 #{g.line_width}
-      a #{g.center_circle_radius - g.line_width} #{g.center_circle_radius - g.line_width} 0 0 0 0 #{2 * (g.center_circle_radius - g.line_width)}
-      a #{g.center_circle_radius - g.line_width} #{g.center_circle_radius - g.line_width} 0 0 0 0-#{2 * (g.center_circle_radius - g.line_width)}
+  left_goal_path = (g) ->
+    """
+    M-#{g.field_length / 2}-#{g.goal_width / 2 + g.goal_wall_width / 2}
+    h-#{g.goal_depth + g.goal_wall_width}
+    v #{g.goal_width + 2 * g.goal_wall_width}
+    h #{g.goal_depth + g.goal_wall_width}
+    v-#{g.goal_wall_width}
+    h-#{g.goal_depth}
+    v-#{g.goal_width}
+    h #{g.goal_depth}
+    z
+    """
 
-      M #{g.boundary_width + g.field_length / 2} #{g.boundary_width + g.field_width / 2 - 1.5 * g.line_width}
-      a #{1.5 * g.line_width} #{1.5 * g.line_width} 0 0 1 0 #{3 * g.line_width}
-      a #{1.5 * g.line_width} #{1.5 * g.line_width} 0 0 1 0-#{3 * g.line_width}
-
-      M #{g.boundary_width} #{g.boundary_width + g.field_width / 2 - g.defense_radius - g.defense_stretch / 2}
-      a #{g.defense_radius} #{g.defense_radius} 0 0 1 #{g.defense_radius} #{g.defense_radius}
-      v #{g.defense_stretch}
-      a #{g.defense_radius} #{g.defense_radius} 0 0 1-#{g.defense_radius} #{g.defense_radius}
-      v-#{g.line_width}
-      a #{g.defense_radius - g.line_width} #{g.defense_radius - g.line_width} 0 0 0 #{g.defense_radius - g.line_width}-#{g.defense_radius - g.line_width}
-      v-#{g.defense_stretch}
-      a #{g.defense_radius - g.line_width} #{g.defense_radius - g.line_width} 0 0 0-#{g.defense_radius - g.line_width}-#{g.defense_radius - g.line_width}
-
-      M #{g.boundary_width + g.field_length} #{g.boundary_width + g.field_width / 2 + g.defense_radius + g.defense_stretch / 2}
-      a #{g.defense_radius} #{g.defense_radius} 0 0 1-#{g.defense_radius}-#{g.defense_radius}
-      v-#{g.defense_stretch}
-      a #{g.defense_radius} #{g.defense_radius} 0 0 1 #{g.defense_radius}-#{g.defense_radius}
-      v #{g.line_width}
-      a #{g.defense_radius - g.line_width} #{g.defense_radius - g.line_width} 0 0 0-#{g.defense_radius - g.line_width} #{g.defense_radius - g.line_width}
-      v #{g.defense_stretch}
-      a #{g.defense_radius - g.line_width} #{g.defense_radius - g.line_width} 0 0 0 #{g.defense_radius - g.line_width} #{g.defense_radius - g.line_width}
-
-      M #{g.boundary_width + g.penalty_spot_from_field_line_dist - g.line_width} #{g.boundary_width + g.field_width / 2}
-      a #{1 * g.line_width} #{1 * g.line_width} 0 0 1 #{2 * g.line_width} 0
-      a #{1 * g.line_width} #{1 * g.line_width} 0 0 1-#{2 * g.line_width} 0
-
-      M #{g.boundary_width + g.field_length - g.penalty_spot_from_field_line_dist - g.line_width} #{g.boundary_width + g.field_width / 2}
-      a #{1 * g.line_width} #{1 * g.line_width} 0 0 1 #{2 * g.line_width} 0
-      a #{1 * g.line_width} #{1 * g.line_width} 0 0 1-#{2 * g.line_width} 0
-
-      z
-      """)
-
-  svg.append("path")
+  svg.select(".left-goal")
     .classed("blue", is_blue_left)
     .classed("yellow", not is_blue_left)
-    .classed("field-lines", true)
-    .attr("d",
-      """
-      M #{g.boundary_width} #{g.boundary_width + g.field_width / 2 - g.goal_width / 2 - g.goal_wall_width / 2}
-      h-#{g.goal_depth + g.goal_wall_width}
-      v #{g.goal_width + 2 * g.goal_wall_width}
-      h #{g.goal_depth + g.goal_wall_width}
-      v-#{g.goal_wall_width}
-      h-#{g.goal_depth}
-      v-#{g.goal_width}
-      h #{g.goal_depth}
-      z
-      """)
+    .datum(field_geometry)
+    .transition()
+    .duration(750)
+    .attr("d", left_goal_path)
 
-  svg.append("path")
+  right_goal_path = (g) ->
+    """
+    M #{g.field_length / 2}-#{g.goal_width / 2 + g.goal_wall_width / 2}
+    h #{g.goal_depth + g.goal_wall_width}
+    v #{g.goal_width + 2 * g.goal_wall_width}
+    h-#{g.goal_depth + g.goal_wall_width}
+    v-#{g.goal_wall_width}
+    h #{g.goal_depth}
+    v-#{g.goal_width}
+    h-#{g.goal_depth}
+    z
+    """
+
+  svg.select(".right-goal")
     .classed("blue", not is_blue_left)
     .classed("yellow", is_blue_left)
-    .classed("field-lines", true)
-    .attr("d",
-      """
-      M #{g.boundary_width + g.field_length} #{g.boundary_width + g.field_width / 2 - g.goal_width / 2 - g.goal_wall_width / 2}
-      h #{g.goal_depth + g.goal_wall_width}
-      v #{g.goal_width + 2 * g.goal_wall_width}
-      h-#{g.goal_depth + g.goal_wall_width}
-      v-#{g.goal_wall_width}
-      h #{g.goal_depth}
-      v-#{g.goal_width}
-      h-#{g.goal_depth}
-      z
-      """)
+    .datum(field_geometry)
+    .transition()
+    .duration(750)
+    .attr("d", right_goal_path)
 
-drawRobots = (robot_data, color) ->
-  robots = d3.selectAll "robot.#{color}"
+drawRobots = (robots, color) ->
+  radius = 90
+  front_cut = 65
 
-  #robots.forEach (robot) ->
-  #  orientation = 270 - robot.orientation / 3.14159265359878 * 180
-  #  x = -robot.x / geometry.scaling + geometry.length / 2 + geometry.border
-  #  y = robot.y / geometry.scaling + geometry.width / 2 + geometry.border
-  #  canvas.drawArc
+  robot_path = (r) ->
+    """
+    M #{r.x.toFixed(4)} #{(-r.y).toFixed(4)}
+    m #{front_cut} #{Math.sqrt(radius * radius - front_cut * front_cut).toFixed(4)}
+    a #{radius} #{radius} 0 1 1 0-#{2 * front_cut}
+    z
+    """
 
-  #    # Todo: change this
-  #    fillStyle: color
-  #    x: x
-  #    y: y
-  #    radius: geometry.robot_radius
-  #    start: orientation + geometry.robot_kicker_arc
-  #    end: orientation - geometry.robot_kicker_arc
+  robot_transform = (r) ->
+    "rotate(#{(180 * r.orientation / Math.PI).toFixed(4)}, #{r.x.toFixed(4)}, #{(-r.y).toFixed(4)})"
 
-  #  canvas.drawText
-  #    fillStyle: colors.white
-  #    strokeStyle: colors.black
-  #    strokeWidth: 1
-  #    x: x
-  #    y: y
-  #    fontSize: 8
-  #    fontFamily: "Verdana, sans-serif"
-  #    text: robot.robot_id
+  robot = svg.selectAll(".robot.#{color}").data(robots)
 
+  robot.enter()
+    .append("path")
+    .classed("robot", true)
+    .classed(color, true)
+    .attr("d", robot_path)
+    .attr("transform", robot_transform)
+
+  robot.exit()
+    .remove()
+
+  robot
+    .attr("d", robot_path)
+    .attr("transform", robot_transform)
 
 drawBalls = (balls) ->
-  balls.forEach (ball) ->
-    canvas.drawArc
+  radius = 21.5
 
-      # Todo: change this
-      fillStyle: colors.orange
-      x: -ball.x / geometry.scaling + geometry.length / 2 + geometry.border
-      y: ball.y / geometry.scaling + geometry.width / 2 + geometry.border
-      radius: geometry.ball_radius
+  ball = svg.selectAll(".ball").data(balls)
+
+  ball
+    .attr("cx", (b) -> b.x)
+    .attr("cy", (b) -> -b.y)
+
+  ball.enter()
+    .append("circle")
+    .classed("ball", true)
+    .attr("r", radius)
+    .attr("cx", (b) -> b.x)
+    .attr("cy", (b) -> -b.y)
+
+  ball.exit()
+    .remove()
 
 updateRefereeState = (referee) ->
   # Time voodoo: converting ticks to minutes:seconds
@@ -208,7 +254,9 @@ updateRefereeState = (referee) ->
 # Run once DOM is ready. Setup socket events and fire away.
 $ ->
   socket = io.connect()
-  #canvas = $("#main_canvas")
+
+  initField()
+  # draw default sized field
   drawField(default_geometry_field)
 
   socket.on "ssl_packet", (packet) ->
@@ -217,11 +265,10 @@ $ ->
     if detection?
       drawRobots detection.robots_yellow, "yellow"
       drawRobots detection.robots_blue, "blue"
-      #drawBalls detection.balls
+      drawBalls detection.balls
 
     if geometry?
       drawField geometry.field
-      #window.geo = geometry
 
   socket.on "ssl_refbox_packet", (packet) ->
     updateRefereeState packet
