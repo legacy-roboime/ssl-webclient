@@ -13,7 +13,6 @@ GNU Affero General Public License for more details.
 ###
 
 join = require("path").join
-config = require("config")
 
 module.exports = (grunt) ->
   grunt.loadNpmTasks "grunt-contrib-copy"
@@ -85,6 +84,8 @@ module.exports = (grunt) ->
       app:
         options:
           pretty: true
+          data: ->
+            livereload: require("config").livereload
         files:
           "public/index.html": "app/index.jade"
 
