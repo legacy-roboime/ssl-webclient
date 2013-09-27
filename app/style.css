@@ -1,3 +1,6 @@
+.controls {
+  float: right;
+}
 #info.container {
   padding-top: 5px
 }

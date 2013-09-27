@@ -10,6 +10,7 @@ html(lang="en")
   #field
 
   #info.container
+
     ul.breadcrumb
       li
         span#team_blue
@@ -26,9 +27,14 @@ html(lang="en")
         &nbsp;
         span#time_left --
 
+    .controls
+      a.btn.btn-default.fullscreen-btn(data-toggle="tooltip", title="Fullscreen", data-placement="bottom")
+        i.icon-fullscreen
+
   script(src="/lib/js/jquery.min.js")
   script(src="/lib/js/bootstrap.min.js")
   script(src="/lib/js/d3.min.js")
+  script(src="/lib/js/screenfull.min.js")
   script(src="/socket.io/socket.io.js")
   script(src="/client.js")
   if livereload

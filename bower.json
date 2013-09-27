@@ -8,7 +8,8 @@
     "jquery": ">=1.9.0",
     "d3": "~3.3.5",
     "bootstrap": "~3.0",
-    "font-awesome": "~3.2"
+    "font-awesome": "~3.2",
+    "screenfull": "~1.1"
   },
   "exportsOverride": {
     "jquery": {
@@ -25,6 +26,9 @@
     "font-awesome": {
       "css": "css/*",
       "font": "font/*"
+    },
+    "screenfull": {
+      "js": "dist/*.js"
     }
   }
 }

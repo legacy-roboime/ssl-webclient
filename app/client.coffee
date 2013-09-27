@@ -294,3 +294,10 @@ socket.on "ssl_packet", (packet) ->
 
 socket.on "ssl_refbox_packet", (packet) ->
   updateRefereeState packet
+
+$ ->
+  $("[data-toggle='tooltip']").tooltip()
+  field = $("#field")[0]
+  $(".fullscreen-btn").click ->
+    if screenfull.enabled
+      screenfull.toggle(field)
