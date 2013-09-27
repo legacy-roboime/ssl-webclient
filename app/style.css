@@ -5,10 +5,20 @@
   display: inline-block;
 }
 #team_blue .team_name {
-  text-shadow: #88f 0 0 1px
+  text-shadow: #99e 0 0 1px;
+}
+#team_blue .badge {
+  background-color: #99e;
 }
 #team_yellow .team_name {
-  text-shadow: #ff0 0 0 1px
+  text-shadow: #ee6 0 0 1px;
+}
+#team_yellow .badge {
+  background-color: #ee6;
+}
+#team_blue .badge, #team_yellow .badge {
+  text-shadow: rgba(0, 0, 0, 0.6) 0 0 3px;
+  box-shadow: rgba(0, 0, 0, 0.4) 0 0 3px;
 }
 #field {
   position: fixed;
