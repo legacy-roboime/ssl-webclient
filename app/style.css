@@ -34,6 +34,10 @@
   z-index: -1;
   background: #080;
 }
+text.robot-label {
+  fill: #000;
+  font-size: 120px;
+}
 .yellow {
   fill: #ff0;
 }

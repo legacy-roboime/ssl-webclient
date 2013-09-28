@@ -184,6 +184,9 @@ robot_transform = (r) ->
 
 ball_radius = 21.5
 
+robot_label = (r) ->
+  r.robot_id
+
 drawField = (field_geometry, is_blue_left=true) ->
 
   svg.select(".field-line")
@@ -212,6 +215,10 @@ drawRobots = (robots, color) ->
 
   robot = svg.selectAll(".robot.#{color}").data(robots)
 
+  robot
+    .attr("d", robot_path)
+    .attr("transform", robot_transform)
+
   robot.enter()
     .append("path")
     .classed("robot", true)
@@ -222,9 +229,25 @@ drawRobots = (robots, color) ->
   robot.exit()
     .remove()
 
-  robot
-    .attr("d", robot_path)
-    .attr("transform", robot_transform)
+  label = svg.selectAll(".robot-label.#{color}").data(robots)
+
+  label
+    .text(robot_label)
+    .attr("x", (r) -> r.x)
+    .attr("y", (r) -> -r.y)
+
+  label.enter()
+    .append("text")
+    .classed("robot-label", true)
+    .classed(color, true)
+    .text(robot_label)
+    .attr("text-anchor", "middle")
+    .attr("alignment-baseline", "central")
+    .attr("x", (r) -> r.x)
+    .attr("y", (r) -> -r.y)
+
+  label.exit()
+    .remove()
 
 drawBalls = (balls) ->
 
