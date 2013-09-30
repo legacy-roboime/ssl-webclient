@@ -29,6 +29,10 @@ port = process.env.PORT || http.port
 addr = http.address
 io = socketio.listen(app.listen(port, addr))
 io.set "log level", 1
+if process.env.LONGPOLLING is "true"
+  console.log "using long polling"
+  io.set "transports", ["xhr-polling"]
+  io.set "polling duration", 10
 
 # this is so the server is also a local vision listener
 if config.self_tunnel
