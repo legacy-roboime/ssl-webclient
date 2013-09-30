@@ -19,6 +19,10 @@ config = require("config")
 {http, debug} = config
 
 app = express()
+app.get '/*', (req, res, next) ->
+  res.setHeader 'Access-Control-Allow-Origin', '*'
+  next()
+
 app.use express.static(join(__dirname, "..", "public"))
 
 port = process.env.PORT || http.port
