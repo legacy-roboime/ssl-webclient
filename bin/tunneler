@@ -1,0 +1,4 @@
+#!/bin/bash
+ROOT=$(dirname $(dirname $0))
+PATH="node_modules/.bin:/app/vendor/convert/bin:$PATH"
+exec coffee $ROOT/src/tunneler.coffee

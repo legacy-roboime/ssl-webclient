@@ -302,6 +302,7 @@ svg.append("path").classed("right-goal", true)
 # draw default sized field
 drawField(default_geometry_field)
 
+#socket = io.connect('http://ssl-webclient.roboime.com:80/')
 socket = io.connect()
 
 socket.on "ssl_packet", (packet) ->

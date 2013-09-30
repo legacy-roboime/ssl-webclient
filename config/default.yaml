@@ -4,8 +4,8 @@ http:
 
 tunnel_to:
   proto: "http"
-  address: "localhost"
-  port: 80
+  address: "ssl-webclient.roboime.com"
+  port: 8888
 
 # by default debugging is off
 debug: false
