@@ -184,7 +184,7 @@ GNU Affero General Public License for more details.
 
   drawField(default_geometry_field);
 
-  socket = io.connect('http://ssl-webclient.heroku.com:80/');
+  socket = io.connect('http://ssl-webclient.roboime.com:80/');
 
   socket.on("ssl_packet", function(packet) {
     var detection, geometry;
