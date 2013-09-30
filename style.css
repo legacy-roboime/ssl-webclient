@@ -1,0 +1,55 @@
+.controls {
+  float: right;
+}
+#info.container {
+  padding-top: 5px
+}
+#info.container .breadcrumb {
+  display: inline-block;
+}
+#team_blue .team_name {
+  text-shadow: #99e 0 0 1px;
+}
+#team_blue .badge {
+  background-color: #99e;
+}
+#team_yellow .team_name {
+  text-shadow: #ee6 0 0 1px;
+}
+#team_yellow .badge {
+  background-color: #ee6;
+}
+#team_blue .badge, #team_yellow .badge {
+  text-shadow: rgba(0, 0, 0, 0.6) 0 0 3px;
+  box-shadow: rgba(0, 0, 0, 0.4) 0 0 3px;
+}
+#field {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  z-index: -1;
+  background: #080;
+}
+text.robot-label {
+  fill: #000;
+  font-size: 120px;
+}
+.yellow {
+  fill: #ff0;
+}
+.blue {
+  fill: #00f;
+}
+.ball {
+  fill: #fb0;
+}
+.grass {
+  fill: #080;
+}
+.field-line {
+  fill: #fff;
+}
