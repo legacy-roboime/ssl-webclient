@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 
 dgram = require("dgram")
 protobuf = require("protobufjs")
-{http, vision, debug, referee} = require("config")
+{tunnel_to, vision, debug, referee} = require("config")
 
 io = require("socket.io-client")
 builder = protobuf.protoFromFile("src/protos/messages_robocup_ssl_wrapper.proto")
@@ -30,7 +30,7 @@ tunneler = (socket) ->
     vision_client.setBroadcast true
     vision_client.setMulticastTTL 128
     vision_client.addMembership vision.address
-    console.log "Listening #{vision.address}:#{vision.port} ..."
+    console.log "Listening for vision on #{vision.address}:#{vision.port} ..."
 
   vision_client.on "message", (message, remote) ->
     wrapper = Wrapper.decode(message)
@@ -47,7 +47,7 @@ tunneler = (socket) ->
     referee_client.setBroadcast true
     referee_client.setMulticastTTL 128
     referee_client.addMembership referee.address
-    console.log "Listening #{referee.address}:#{referee.port} ..."
+    console.log "Listening for referee on #{referee.address}:#{referee.port} ..."
 
   referee_client.on "message", (message, remote) ->
     wrapper = Referee.decode(message)
@@ -62,4 +62,4 @@ module.exports = tunneler
 
 if module is require.main
   # connect to the server to feed it
-  tunneler io.connect("http://#{http.address}/", port: http.port)
+  tunneler io.connect("#{tunnel_to.proto}://#{tunnel_to.address}/", port: tunnel_to.port)

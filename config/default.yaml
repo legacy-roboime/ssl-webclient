@@ -1,9 +1,15 @@
 http:
-  address: "127.0.0.1"
-  port: 9001
+  address: "0.0.0.0"
+  port: 80
+
+tunnel_to:
+  proto: "http"
+  address: "localhost"
+  port: 80
 
 # by default debugging is off
-debug: false
+#debug: false
+debug: true
 
 # wether this server is also an ssl tunneler to itself
 self_tunnel: false
