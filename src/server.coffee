@@ -21,7 +21,9 @@ config = require("config")
 app = express()
 app.use express.static(join(__dirname, "..", "public"))
 
-io = socketio.listen(app.listen(http.port, http.address))
+port = process.env.PORT || http.port
+addr = http.address
+io = socketio.listen(app.listen(port, addr))
 io.set "log level", 1
 
 # this is so the server is also a local vision listener

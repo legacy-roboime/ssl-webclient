@@ -8,8 +8,7 @@ tunnel_to:
   port: 80
 
 # by default debugging is off
-#debug: false
-debug: true
+debug: false
 
 # wether this server is also an ssl tunneler to itself
 self_tunnel: false
