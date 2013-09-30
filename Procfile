@@ -1,1 +1,1 @@
-web: coffee src/server.coffee
+web: bin/server
