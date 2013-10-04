@@ -189,27 +189,40 @@ robot_label = (r) ->
 
 drawField = (field_geometry, is_blue_left=true) ->
 
-  svg.select(".field-line")
-    .datum(field_geometry)
+  f = svg.datum(field_geometry)
+
+  f.select(".field-line")
     .transition()
     .duration(750)
     .attr("d", field_path)
 
-  svg.select(".left-goal")
+  f.select(".left-goal")
     .classed("blue", is_blue_left)
     .classed("yellow", not is_blue_left)
-    .datum(field_geometry)
     .transition()
     .duration(750)
     .attr("d", left_goal_path)
 
-  svg.select(".right-goal")
+  f.select(".right-goal")
     .classed("blue", not is_blue_left)
     .classed("yellow", is_blue_left)
-    .datum(field_geometry)
     .transition()
     .duration(750)
     .attr("d", right_goal_path)
+
+  sp = 25
+
+  f.select(".time-left")
+    .attr("x", 0)
+    .attr("y", (f) -> -f.field_width / 2 - sp)
+
+  f.select(".left-name")
+    .attr("x", (f) -> -f.field_length / 2 + sp)
+    .attr("y", (f) -> -f.field_width / 2 + sp)
+
+  f.select(".right-name")
+    .attr("x", (f) -> f.field_length / 2 - sp)
+    .attr("y", (f) -> -f.field_width / 2 + sp)
 
 drawRobots = (robots, color) ->
 
@@ -241,8 +254,6 @@ drawRobots = (robots, color) ->
     .classed("robot-label", true)
     .classed(color, true)
     .text(robot_label)
-    .attr("text-anchor", "middle")
-    .attr("alignment-baseline", "central")
     .attr("x", (r) -> r.x)
     .attr("y", (r) -> -r.y)
 
@@ -281,23 +292,42 @@ ticks_to_time = (ticks) ->
   else
     "--:--"
 
-updateRefereeState = (referee) ->
+updateRefereeState = (referee, is_blue_left=true) ->
 
-  d3.select("#time_left").datum(referee).html((d) -> ticks_to_time(d.stage_time_left))
+  #d3.select("#time_left").datum(referee).html((d) -> ticks_to_time(d.stage_time_left))
+  svg.select(".time-left").datum(referee.stage_time_left)
+    .text(ticks_to_time)
 
-  yellow_team = d3.select("#team_yellow").datum(referee.yellow)
-  yellow_team.select(".team_name").html((d) -> d.name)
-  yellow_team.select(".score").html((d) -> d.score)
+  [left, right] = if is_blue_left then [referee.blue, referee.yellow] else [referee.yellow, referee.blue]
 
-  blue_team = d3.select("#team_blue").datum(referee.blue)
-  blue_team.select(".team_name").html((d) -> d.name)
-  blue_team.select(".score").html((d) -> d.score)
+  svg.select(".left-name").datum(left)
+    .text((d) -> d.name)
+
+  svg.select(".right-name").datum(right)
+    .text((d) -> d.name)
+
+  #yellow_team = d3.select("#team_yellow").datum(referee.yellow)
+  #yellow_team.select(".team_name").html((d) -> d.name)
+  #yellow_team.select(".score").html((d) -> d.score)
+
+  #blue_team = d3.select("#team_blue").datum(referee.blue)
+  #blue_team.select(".team_name").html((d) -> d.name)
+  #blue_team.select(".score").html((d) -> d.score)
 
 
 # initialize the field
 svg.append("path").classed("field-line", true)
 svg.append("path").classed("left-goal", true)
 svg.append("path").classed("right-goal", true)
+svg.append("text").classed("time-left", true)
+svg.append("text").classed("team-name", true)
+  .classed("left-name", true)
+  .attr("text-anchor", "start")
+  .attr("alignment-baseline", "hanging")
+svg.append("text").classed("team-name", true)
+  .classed("right-name", true)
+  .attr("text-anchor", "end")
+  .attr("alignment-baseline", "hanging")
 
 # draw default sized field
 drawField(default_geometry_field)

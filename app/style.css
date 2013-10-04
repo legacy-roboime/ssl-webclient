@@ -37,6 +37,10 @@
 text.robot-label {
   fill: #000;
   font-size: 120px;
+  text-anchor: middle;
+  alignment-baseline: central;
+  /*.attr("text-anchor", "middle")
+  .attr("alignment-baseline", "central")*/
 }
 .yellow {
   fill: #ff0;
@@ -52,4 +56,13 @@ text.robot-label {
 }
 .field-line {
   fill: #fff;
+}
+.time-left {
+  fill: rgba(0, 0, 0, 0.4);
+  font-size: 180px;
+  text-anchor: middle;
+}
+.team-name {
+  fill: rgba(0, 0, 0, 0.4);
+  font-size: 300px;
 }
