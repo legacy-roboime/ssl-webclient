@@ -305,7 +305,7 @@ drawField(default_geometry_field)
 #socket = io.connect('http://ssl-webclient.roboime.com:8888/')
 socket = io.connect()
 
-socket.on "ssl_packet", (packet) ->
+socket.on "vision_packet", (packet) ->
   {detection, geometry} = packet
 
   if detection?
@@ -316,7 +316,7 @@ socket.on "ssl_packet", (packet) ->
   if geometry?
     drawField geometry.field
 
-socket.on "ssl_refbox_packet", (packet) ->
+socket.on "refbox_packet", (packet) ->
   updateRefereeState packet
 
 $ ->

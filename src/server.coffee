@@ -45,16 +45,16 @@ io.sockets.on "connection", (socket) ->
   # connected sockets get to see it.
 
   # TODO: Implement separation of sockets per game
-  socket.on "ssl_packet", (packet) ->
+  socket.on "vision_packet", (packet) ->
     if debug
       console.log packet
 
     # Forward packet to all the client sockets.
-    io.sockets.emit "ssl_packet", packet
+    io.sockets.emit "vision_packet", packet
 
-  socket.on "ssl_refbox_packet", (packet) ->
+  socket.on "refbox_packet", (packet) ->
     if debug
       console.log packet
 
     # Forward packet to all the client sockets.
-    io.sockets.emit "ssl_refbox_packet", packet
+    io.sockets.emit "refbox_packet", packet

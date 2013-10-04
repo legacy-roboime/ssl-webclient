@@ -37,7 +37,7 @@ tunneler = (socket) ->
     if debug
       console.log "received message from #{remote.address}:"
       console.log wrapper
-    socket.emit "ssl_packet", wrapper
+    socket.emit "vision_packet", wrapper
 
   vision_client.bind(vision.port)
 
@@ -54,7 +54,7 @@ tunneler = (socket) ->
     if debug
       console.log "received message from #{remote.address}:"
       console.log wrapper
-    socket.emit "ssl_refbox_packet", wrapper
+    socket.emit "refbox_packet", wrapper
 
   referee_client.bind(referee.port)
 
