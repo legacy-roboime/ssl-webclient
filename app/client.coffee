@@ -189,31 +189,44 @@ robot_label = (r) ->
 
 drawField = (field_geometry, is_blue_left=true) ->
 
-  svg.select(".field-line")
-    .datum(field_geometry)
+  f = svg.datum(field_geometry)
+
+  f.select(".field-line")
     .transition()
     .duration(750)
     .attr("d", field_path)
 
-  svg.select(".left-goal")
+  f.select(".left-goal")
     .classed("blue", is_blue_left)
     .classed("yellow", not is_blue_left)
-    .datum(field_geometry)
     .transition()
     .duration(750)
     .attr("d", left_goal_path)
 
-  svg.select(".right-goal")
+  f.select(".right-goal")
     .classed("blue", not is_blue_left)
     .classed("yellow", is_blue_left)
-    .datum(field_geometry)
     .transition()
     .duration(750)
     .attr("d", right_goal_path)
 
+  sp = 25
+
+  f.select(".time-left")
+    .attr("x", 0)
+    .attr("y", (f) -> -f.field_width / 2 - sp)
+
+  f.select(".left-name")
+    .attr("x", (f) -> -f.field_length / 2 + sp)
+    .attr("y", (f) -> -f.field_width / 2 + sp)
+
+  f.select(".right-name")
+    .attr("x", (f) -> f.field_length / 2 - sp)
+    .attr("y", (f) -> -f.field_width / 2 + sp)
+
 drawRobots = (robots, color) ->
 
-  robot = svg.selectAll(".robot.#{color}").data(robots)
+  robot = svg.selectAll(".robot.#{color}").data(robots, (d) -> d.robot_id)
 
   robot
     .attr("d", robot_path)
@@ -226,10 +239,10 @@ drawRobots = (robots, color) ->
     .attr("d", robot_path)
     .attr("transform", robot_transform)
 
-  robot.exit()
-    .remove()
+  #robot.exit()
+  #  .remove()
 
-  label = svg.selectAll(".robot-label.#{color}").data(robots)
+  label = svg.selectAll(".robot-label.#{color}").data(robots, (d) -> d.robot_id)
 
   label
     .text(robot_label)
@@ -241,13 +254,11 @@ drawRobots = (robots, color) ->
     .classed("robot-label", true)
     .classed(color, true)
     .text(robot_label)
-    .attr("text-anchor", "middle")
-    .attr("alignment-baseline", "central")
     .attr("x", (r) -> r.x)
     .attr("y", (r) -> -r.y)
 
-  label.exit()
-    .remove()
+  #label.exit()
+  #  .remove()
 
 drawBalls = (balls) ->
 
@@ -264,8 +275,8 @@ drawBalls = (balls) ->
     .attr("cx", (b) -> b.x)
     .attr("cy", (b) -> -b.y)
 
-  ball.exit()
-    .remove()
+  #ball.exit()
+  #  .remove()
 
 pad = (n, width, z) ->
   z = z || "0"
@@ -281,32 +292,30 @@ ticks_to_time = (ticks) ->
   else
     "--:--"
 
-updateRefereeState = (referee) ->
+updateRefereeState = (referee, is_blue_left=true) ->
 
-  d3.select("#time_left").datum(referee).html((d) -> ticks_to_time(d.stage_time_left))
+  #d3.select("#time_left").datum(referee).html((d) -> ticks_to_time(d.stage_time_left))
+  svg.select(".time-left").datum(referee.stage_time_left)
+    .text(ticks_to_time)
 
-  yellow_team = d3.select("#team_yellow").datum(referee.yellow)
-  yellow_team.select(".team_name").html((d) -> d.name)
-  yellow_team.select(".score").html((d) -> d.score)
+  [left, right] = if is_blue_left then [referee.blue, referee.yellow] else [referee.yellow, referee.blue]
 
-  blue_team = d3.select("#team_blue").datum(referee.blue)
-  blue_team.select(".team_name").html((d) -> d.name)
-  blue_team.select(".score").html((d) -> d.score)
+  svg.select(".left-name").datum(left)
+    .text((d) -> d.name)
 
+  svg.select(".right-name").datum(right)
+    .text((d) -> d.name)
 
-# initialize the field
-svg.append("path").classed("field-line", true)
-svg.append("path").classed("left-goal", true)
-svg.append("path").classed("right-goal", true)
+  #yellow_team = d3.select("#team_yellow").datum(referee.yellow)
+  #yellow_team.select(".team_name").html((d) -> d.name)
+  #yellow_team.select(".score").html((d) -> d.score)
 
-# draw default sized field
-drawField(default_geometry_field)
+  #blue_team = d3.select("#team_blue").datum(referee.blue)
+  #blue_team.select(".team_name").html((d) -> d.name)
+  #blue_team.select(".score").html((d) -> d.score)
 
-socket = io.connect('http://ssl-webclient.roboime.com:8888/')
-#socket = io.connect()
-
-socket.on "ssl_packet", (packet) ->
-  {detection, geometry} = packet
+updateVisionState = (vision) ->
+  {detection, geometry} = vision
 
   if detection?
     drawRobots detection.robots_yellow, "yellow"
@@ -316,7 +325,135 @@ socket.on "ssl_packet", (packet) ->
   if geometry?
     drawField geometry.field
 
-socket.on "ssl_refbox_packet", (packet) ->
+
+# initialize the field
+svg.append("path").classed("field-line", true)
+svg.append("path").classed("left-goal", true)
+svg.append("path").classed("right-goal", true)
+svg.append("text").classed("time-left", true)
+svg.append("text").classed("team-name", true)
+  .classed("left-name", true)
+  .attr("text-anchor", "start")
+  .attr("alignment-baseline", "hanging")
+svg.append("text").classed("team-name", true)
+  .classed("right-name", true)
+  .attr("text-anchor", "end")
+  .attr("alignment-baseline", "hanging")
+
+# draw default sized field
+drawField(default_geometry_field)
+
+# ---------------------------
+# log playing stuff
+
+# XXX: why do we need this? bug??
+window.ProtoBuf = dcodeIO.ProtoBuf
+
+window.logparser = class LogParser
+
+  header = "SSL_LOG_FILE"
+  vision_builder = dcodeIO.ProtoBuf.protoFromFile("protos/messages_robocup_ssl_wrapper.proto").build("SSL_WrapperPacket")
+  refbox_builder = dcodeIO.ProtoBuf.protoFromFile("protos/referee.proto").build("SSL_Referee")
+
+  constructor: (@buffer) ->
+    # SSL_LOG_FILE + version (uint32)
+    @offset = header.length + 4
+    @dataview = new DataView(@buffer)
+
+    unless @check_type()
+      throw new Error("Invalid file format")
+    unless (ver = @check_version()) == 1
+      throw new Error("Unsupported log format version #{ver}")
+
+  check_type: ->
+    decodeURIComponent(String.fromCharCode.apply(null, Array.prototype.slice.apply(new Uint8Array(@buffer, 0, header.length)))) is header
+
+  check_version: ->
+    @dataview.getUint32(header.length)
+
+  # Binary log file specification can be found here:
+  # http://robocupssl.cpe.ku.ac.th/gamelogs
+  parse_packet: ->
+    # TODO: worry about endianess
+    timestamp = new Date(dcodeIO.Long.fromBits(@dataview.getUint32(@offset + 4), @dataview.getUint32(@offset)).toNumber() / 1000 / 1000)
+    type = @dataview.getUint32(@offset + 8)
+    size = @dataview.getUint32(@offset + 12)
+    switch type
+      when 1
+        # TODO: try to identify packet type
+        packet = "TODO"
+      when 2
+        packet = vision_builder.decode(@buffer.slice(@offset + 16, @offset + 16 + size))
+      when 3
+        try
+          packet = refbox_builder.decode(@buffer.slice(@offset + 16, @offset + 16 + size))
+        catch e
+          console.log(e)
+      else
+        packet = "UNSUPPORTED"
+    @offset += 16 + size
+    return {
+      timestamp: timestamp
+      type: type
+      packet: packet
+    }
+
+  all: (cb) ->
+    console.log("parsing...")
+    while @offset < @buffer.byteLength - 1
+      cb(@parse_packet())
+    console.log("...done")
+
+  rewind: ->
+    @offset = header.length + 4
+
+  play: (cb) ->
+    # XXX: notice we're skipping the first packet
+    if @offset < @buffer.byteLength - 1
+      @previous = @previous || @parse_packet()
+      @current = @parse_packet()
+      delta = @current.timestamp - @previous.timestamp
+      delta = 0 if delta < 0
+      setTimeout (=> @play(cb)), delta
+      @previous = @current
+      cb(@current)
+    else
+      console.log("reached end")
+
+window.packets = _packets = []
+log_reader = new FileReader()
+log_reader.onload = (e) ->
+  window.result = log_reader.result
+  log_parser = new LogParser(log_reader.result)
+  #_packets = []
+  #log_parser.all (packet) ->
+  #  #console.log(packet[0])
+  #  _packets.push(packet)
+
+  # Play the file NOW and use the given callback
+  log_parser.play (p) ->
+    console.log("render")
+    switch p.type
+      when 2
+        updateVisionState p.packet
+      when 3
+        updateRefereeState p.packet
+      else
+        console.log p
+
+
+$("#file-input").on "change", (e) ->
+  log_reader.readAsArrayBuffer(f) for f in e.target.files
+
+# ---------------------------
+
+#socket = io.connect('http://ssl-webclient.roboime.com:8888/')
+socket = io.connect()
+
+socket.on "vision_packet", (packet) ->
+  updateVisionState packet
+
+socket.on "refbox_packet", (packet) ->
   updateRefereeState packet
 
 $ ->

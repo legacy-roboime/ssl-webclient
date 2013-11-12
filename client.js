@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 
 
 (function() {
-  var ball_radius, default_geometry_field, drawBalls, drawField, drawRobots, field_path, inner_height, inner_width, left_goal_path, pad, right_goal_path, robot_front_cut, robot_label, robot_path, robot_radius, robot_transform, socket, svg, ticks_to_time, updateRefereeState;
+  var LogParser, ball_radius, default_geometry_field, drawBalls, drawField, drawRobots, field_path, inner_height, inner_width, left_goal_path, log_reader, pad, right_goal_path, robot_front_cut, robot_label, robot_path, robot_radius, robot_transform, socket, svg, ticks_to_time, updateRefereeState, updateVisionState, _packets;
 
   inner_width = 7200;
 
@@ -87,32 +87,50 @@ GNU Affero General Public License for more details.
   };
 
   drawField = function(field_geometry, is_blue_left) {
+    var f, sp;
     if (is_blue_left == null) {
       is_blue_left = true;
     }
-    svg.select(".field-line").datum(field_geometry).transition().duration(750).attr("d", field_path);
-    svg.select(".left-goal").classed("blue", is_blue_left).classed("yellow", !is_blue_left).datum(field_geometry).transition().duration(750).attr("d", left_goal_path);
-    return svg.select(".right-goal").classed("blue", !is_blue_left).classed("yellow", is_blue_left).datum(field_geometry).transition().duration(750).attr("d", right_goal_path);
+    f = svg.datum(field_geometry);
+    f.select(".field-line").transition().duration(750).attr("d", field_path);
+    f.select(".left-goal").classed("blue", is_blue_left).classed("yellow", !is_blue_left).transition().duration(750).attr("d", left_goal_path);
+    f.select(".right-goal").classed("blue", !is_blue_left).classed("yellow", is_blue_left).transition().duration(750).attr("d", right_goal_path);
+    sp = 25;
+    f.select(".time-left").attr("x", 0).attr("y", function(f) {
+      return -f.field_width / 2 - sp;
+    });
+    f.select(".left-name").attr("x", function(f) {
+      return -f.field_length / 2 + sp;
+    }).attr("y", function(f) {
+      return -f.field_width / 2 + sp;
+    });
+    return f.select(".right-name").attr("x", function(f) {
+      return f.field_length / 2 - sp;
+    }).attr("y", function(f) {
+      return -f.field_width / 2 + sp;
+    });
   };
 
   drawRobots = function(robots, color) {
     var label, robot;
-    robot = svg.selectAll(".robot." + color).data(robots);
+    robot = svg.selectAll(".robot." + color).data(robots, function(d) {
+      return d.robot_id;
+    });
     robot.attr("d", robot_path).attr("transform", robot_transform);
     robot.enter().append("path").classed("robot", true).classed(color, true).attr("d", robot_path).attr("transform", robot_transform);
-    robot.exit().remove();
-    label = svg.selectAll(".robot-label." + color).data(robots);
+    label = svg.selectAll(".robot-label." + color).data(robots, function(d) {
+      return d.robot_id;
+    });
     label.text(robot_label).attr("x", function(r) {
       return r.x;
     }).attr("y", function(r) {
       return -r.y;
     });
-    label.enter().append("text").classed("robot-label", true).classed(color, true).text(robot_label).attr("text-anchor", "middle").attr("alignment-baseline", "central").attr("x", function(r) {
+    return label.enter().append("text").classed("robot-label", true).classed(color, true).text(robot_label).attr("x", function(r) {
       return r.x;
     }).attr("y", function(r) {
       return -r.y;
     });
-    return label.exit().remove();
   };
 
   drawBalls = function(balls) {
@@ -123,12 +141,11 @@ GNU Affero General Public License for more details.
     }).attr("cy", function(b) {
       return -b.y;
     });
-    ball.enter().append("circle").classed("ball", true).attr("r", ball_radius).attr("cx", function(b) {
+    return ball.enter().append("circle").classed("ball", true).attr("r", ball_radius).attr("cx", function(b) {
       return b.x;
     }).attr("cy", function(b) {
       return -b.y;
     });
-    return ball.exit().remove();
   };
 
   pad = function(n, width, z) {
@@ -155,40 +172,24 @@ GNU Affero General Public License for more details.
     }
   };
 
-  updateRefereeState = function(referee) {
-    var blue_team, yellow_team;
-    d3.select("#time_left").datum(referee).html(function(d) {
-      return ticks_to_time(d.stage_time_left);
-    });
-    yellow_team = d3.select("#team_yellow").datum(referee.yellow);
-    yellow_team.select(".team_name").html(function(d) {
+  updateRefereeState = function(referee, is_blue_left) {
+    var left, right, _ref;
+    if (is_blue_left == null) {
+      is_blue_left = true;
+    }
+    svg.select(".time-left").datum(referee.stage_time_left).text(ticks_to_time);
+    _ref = is_blue_left ? [referee.blue, referee.yellow] : [referee.yellow, referee.blue], left = _ref[0], right = _ref[1];
+    svg.select(".left-name").datum(left).text(function(d) {
       return d.name;
     });
-    yellow_team.select(".score").html(function(d) {
-      return d.score;
-    });
-    blue_team = d3.select("#team_blue").datum(referee.blue);
-    blue_team.select(".team_name").html(function(d) {
+    return svg.select(".right-name").datum(right).text(function(d) {
       return d.name;
-    });
-    return blue_team.select(".score").html(function(d) {
-      return d.score;
     });
   };
 
-  svg.append("path").classed("field-line", true);
-
-  svg.append("path").classed("left-goal", true);
-
-  svg.append("path").classed("right-goal", true);
-
-  drawField(default_geometry_field);
-
-  socket = io.connect('http://ssl-webclient.roboime.com:8888/');
-
-  socket.on("ssl_packet", function(packet) {
+  updateVisionState = function(vision) {
     var detection, geometry;
-    detection = packet.detection, geometry = packet.geometry;
+    detection = vision.detection, geometry = vision.geometry;
     if (detection != null) {
       drawRobots(detection.robots_yellow, "yellow");
       drawRobots(detection.robots_blue, "blue");
@@ -197,9 +198,160 @@ GNU Affero General Public License for more details.
     if (geometry != null) {
       return drawField(geometry.field);
     }
+  };
+
+  svg.append("path").classed("field-line", true);
+
+  svg.append("path").classed("left-goal", true);
+
+  svg.append("path").classed("right-goal", true);
+
+  svg.append("text").classed("time-left", true);
+
+  svg.append("text").classed("team-name", true).classed("left-name", true).attr("text-anchor", "start").attr("alignment-baseline", "hanging");
+
+  svg.append("text").classed("team-name", true).classed("right-name", true).attr("text-anchor", "end").attr("alignment-baseline", "hanging");
+
+  drawField(default_geometry_field);
+
+  window.ProtoBuf = dcodeIO.ProtoBuf;
+
+  window.logparser = LogParser = (function() {
+    var header, refbox_builder, vision_builder;
+
+    header = "SSL_LOG_FILE";
+
+    vision_builder = dcodeIO.ProtoBuf.protoFromFile("protos/messages_robocup_ssl_wrapper.proto").build("SSL_WrapperPacket");
+
+    refbox_builder = dcodeIO.ProtoBuf.protoFromFile("protos/referee.proto").build("SSL_Referee");
+
+    function LogParser(buffer) {
+      var ver;
+      this.buffer = buffer;
+      this.offset = header.length + 4;
+      this.dataview = new DataView(this.buffer);
+      if (!this.check_type()) {
+        throw new Error("Invalid file format");
+      }
+      if ((ver = this.check_version()) !== 1) {
+        throw new Error("Unsupported log format version " + ver);
+      }
+    }
+
+    LogParser.prototype.check_type = function() {
+      return decodeURIComponent(String.fromCharCode.apply(null, Array.prototype.slice.apply(new Uint8Array(this.buffer, 0, header.length)))) === header;
+    };
+
+    LogParser.prototype.check_version = function() {
+      return this.dataview.getUint32(header.length);
+    };
+
+    LogParser.prototype.parse_packet = function() {
+      var e, packet, size, timestamp, type;
+      timestamp = new Date(dcodeIO.Long.fromBits(this.dataview.getUint32(this.offset + 4), this.dataview.getUint32(this.offset)).toNumber() / 1000 / 1000);
+      type = this.dataview.getUint32(this.offset + 8);
+      size = this.dataview.getUint32(this.offset + 12);
+      switch (type) {
+        case 1:
+          packet = "TODO";
+          break;
+        case 2:
+          packet = vision_builder.decode(this.buffer.slice(this.offset + 16, this.offset + 16 + size));
+          break;
+        case 3:
+          try {
+            packet = refbox_builder.decode(this.buffer.slice(this.offset + 16, this.offset + 16 + size));
+          } catch (_error) {
+            e = _error;
+            console.log(e);
+          }
+          break;
+        default:
+          packet = "UNSUPPORTED";
+      }
+      this.offset += 16 + size;
+      return {
+        timestamp: timestamp,
+        type: type,
+        packet: packet
+      };
+    };
+
+    LogParser.prototype.all = function(cb) {
+      console.log("parsing...");
+      while (this.offset < this.buffer.byteLength - 1) {
+        cb(this.parse_packet());
+      }
+      return console.log("...done");
+    };
+
+    LogParser.prototype.rewind = function() {
+      return this.offset = header.length + 4;
+    };
+
+    LogParser.prototype.play = function(cb) {
+      var delta,
+        _this = this;
+      if (this.offset < this.buffer.byteLength - 1) {
+        this.previous = this.previous || this.parse_packet();
+        this.current = this.parse_packet();
+        delta = this.current.timestamp - this.previous.timestamp;
+        if (delta < 0) {
+          delta = 0;
+        }
+        setTimeout((function() {
+          return _this.play(cb);
+        }), delta);
+        this.previous = this.current;
+        return cb(this.current);
+      } else {
+        return console.log("reached end");
+      }
+    };
+
+    return LogParser;
+
+  })();
+
+  window.packets = _packets = [];
+
+  log_reader = new FileReader();
+
+  log_reader.onload = function(e) {
+    var log_parser;
+    window.result = log_reader.result;
+    log_parser = new LogParser(log_reader.result);
+    return log_parser.play(function(p) {
+      console.log("render");
+      switch (p.type) {
+        case 2:
+          return updateVisionState(p.packet);
+        case 3:
+          return updateRefereeState(p.packet);
+        default:
+          return console.log(p);
+      }
+    });
+  };
+
+  $("#file-input").on("change", function(e) {
+    var f, _i, _len, _ref, _results;
+    _ref = e.target.files;
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      f = _ref[_i];
+      _results.push(log_reader.readAsArrayBuffer(f));
+    }
+    return _results;
   });
 
-  socket.on("ssl_refbox_packet", function(packet) {
+  socket = io.connect();
+
+  socket.on("vision_packet", function(packet) {
+    return updateVisionState(packet);
+  });
+
+  socket.on("refbox_packet", function(packet) {
     return updateRefereeState(packet);
   });
 
