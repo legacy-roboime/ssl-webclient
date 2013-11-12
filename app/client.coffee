@@ -226,7 +226,7 @@ drawField = (field_geometry, is_blue_left=true) ->
 
 drawRobots = (robots, color) ->
 
-  robot = svg.selectAll(".robot.#{color}").data(robots)
+  robot = svg.selectAll(".robot.#{color}").data(robots, (d) -> d.robot_id)
 
   robot
     .attr("d", robot_path)
@@ -242,7 +242,7 @@ drawRobots = (robots, color) ->
   robot.exit()
     .remove()
 
-  label = svg.selectAll(".robot-label.#{color}").data(robots)
+  label = svg.selectAll(".robot-label.#{color}").data(robots, (d) -> d.robot_id)
 
   label
     .text(robot_label)
@@ -314,6 +314,17 @@ updateRefereeState = (referee, is_blue_left=true) ->
   #blue_team.select(".team_name").html((d) -> d.name)
   #blue_team.select(".score").html((d) -> d.score)
 
+updateVisionState = (vision) ->
+  {detection, geometry} = vision
+
+  if detection?
+    drawRobots detection.robots_yellow, "yellow"
+    drawRobots detection.robots_blue, "blue"
+    drawBalls detection.balls
+
+  if geometry?
+    drawField geometry.field
+
 
 # initialize the field
 svg.append("path").classed("field-line", true)
@@ -332,19 +343,113 @@ svg.append("text").classed("team-name", true)
 # draw default sized field
 drawField(default_geometry_field)
 
+# ---------------------------
+# log playing stuff
+
+# XXX: why do we need this? bug??
+window.ProtoBuf = dcodeIO.ProtoBuf
+
+window.logparser = class LogParser
+
+  header = "SSL_LOG_FILE"
+  vision_builder = dcodeIO.ProtoBuf.protoFromFile("protos/messages_robocup_ssl_wrapper.proto").build("SSL_WrapperPacket")
+  refbox_builder = dcodeIO.ProtoBuf.protoFromFile("protos/referee.proto").build("SSL_Referee")
+
+  constructor: (@buffer) ->
+    # SSL_LOG_FILE + version (uint32)
+    @offset = header.length + 4
+    @dataview = new DataView(@buffer)
+
+    unless @check_type()
+      throw new Error("Invalid file format")
+    unless (ver = @check_version()) == 1
+      throw new Error("Unsupported log format version #{ver}")
+
+  check_type: ->
+    decodeURIComponent(String.fromCharCode.apply(null, Array.prototype.slice.apply(new Uint8Array(@buffer, 0, header.length)))) is header
+
+  check_version: ->
+    @dataview.getUint32(header.length)
+
+  # Binary log file specification can be found here:
+  # http://robocupssl.cpe.ku.ac.th/gamelogs
+  parse_packet: ->
+    # TODO: worry about endianess
+    timestamp = new Date(dcodeIO.Long.fromBits(@dataview.getUint32(@offset + 4), @dataview.getUint32(@offset)).toNumber() / 1000 / 1000)
+    type = @dataview.getUint32(@offset + 8)
+    size = @dataview.getUint32(@offset + 12)
+    switch type
+      when 1
+        # TODO: try to identify packet type
+        packet = "TODO"
+      when 2
+        packet = vision_builder.decode(@buffer.slice(@offset + 16, @offset + 16 + size))
+      when 3
+        try
+          packet = refbox_builder.decode(@buffer.slice(@offset + 16, @offset + 16 + size))
+        catch e
+          console.log(e)
+      else
+        packet = "UNSUPPORTED"
+    @offset += 16 + size
+    return {
+      timestamp: timestamp
+      type: type
+      packet: packet
+    }
+
+  all: (cb) ->
+    console.log("parsing...")
+    while @offset < @buffer.byteLength - 1
+      cb(@parse_packet())
+    console.log("...done")
+
+  rewind: ->
+    @offset = header.length + 4
+
+  play: (cb) ->
+    # XXX: notice we're skipping the first packet
+    if @offset < @buffer.byteLength - 1
+      @previous = @previous || @parse_packet()
+      @current = @parse_packet()
+      delta = @current.timestamp - @previous.timestamp
+      delta = 0 if delta < 0
+      cb(@current)
+      setTimeout (=> @play(cb)), delta
+    else
+      console.log("reached end")
+
+window.packets = _packets = []
+log_reader = new FileReader()
+log_reader.onload = (e) ->
+  window.result = log_reader.result
+  log_parser = new LogParser(log_reader.result)
+  #_packets = []
+  #log_parser.all (packet) ->
+  #  #console.log(packet[0])
+  #  _packets.push(packet)
+
+  # Play the file NOW and use the given callback
+  log_parser.play (p) ->
+    switch p.type
+      when 2
+        updateVisionState p.packet
+      when 3
+        updateRefereeState p.packet
+      else
+        console.log p
+
+
+$("#file-input").on "change", (e) ->
+  log_reader.readAsArrayBuffer(f) for f in e.target.files
+
+# ---------------------------
+
 #socket = io.connect('http://ssl-webclient.roboime.com:8888/')
 socket = io.connect()
 
 socket.on "vision_packet", (packet) ->
-  {detection, geometry} = packet
-
-  if detection?
-    drawRobots detection.robots_yellow, "yellow"
-    drawRobots detection.robots_blue, "blue"
-    drawBalls detection.balls
-
-  if geometry?
-    drawField geometry.field
+  updateVisionState packet
 
 socket.on "refbox_packet", (packet) ->
   updateRefereeState packet

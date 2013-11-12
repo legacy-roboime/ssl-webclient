@@ -10,7 +10,10 @@
     "d3": "~3.3.5",
     "bootstrap": "~3.0",
     "font-awesome": "~3.2",
-    "screenfull": "~1.1"
+    "screenfull": "~1.1",
+    "bytebuffer": "",
+    "protobuf": "",
+    "long": ""
   },
   "exportsOverride": {
     "socket.io-client": {
@@ -33,6 +36,15 @@
     },
     "screenfull": {
       "js": "dist/*.js"
+    },
+    "bytebuffer": {
+      "js": ["*.js", "*.map"]
+    },
+    "protobuf": {
+      "js": ["*.js", "*.map"]
+    },
+    "long": {
+      "js": ["*.js", "*.map"]
     }
   }
 }

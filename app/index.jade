@@ -28,6 +28,7 @@ html(lang="en")
         span#time_left --
 
     .controls
+      input(type="file", id="file-input")
       a.btn.btn-default.fullscreen-btn(data-toggle="tooltip", title="Fullscreen", data-placement="bottom")
         i.icon-fullscreen
 
@@ -36,6 +37,9 @@ html(lang="en")
   script(src="lib/js/d3.min.js")
   script(src="lib/js/screenfull.min.js")
   script(src="lib/js/socket.io.js")
+  script(src="lib/js/Long.min.js")
+  script(src="lib/js/ByteBuffer.min.js")
+  script(src="lib/js/ProtoBuf.min.js")
   script(src="client.js")
   if livereload
     script(src="http://localhost:35729/livereload.js")
