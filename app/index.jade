@@ -27,10 +27,20 @@ html(lang="en")
         &nbsp;
         span#time_left --
 
-    .controls
-      input(type="file", id="file-input")
-      a.btn.btn-default.fullscreen-btn(data-toggle="tooltip", title="Fullscreen", data-placement="bottom")
-        i.icon-fullscreen
+    input.hide#file-input(type="file")
+    .controls.row
+      .col-md-7
+        input.player-slider(type="range")
+        .file-progress.progress.progress-striped.active(style="display: none")
+          .parse-progress.progress-bar.progress-bar-info(role="progressbar", aria-valuenow="45", aria-valuemin="0", aria-valuemax="100")
+          .load-progress.progress-bar.progress-bar-success(role="progressbar", aria-valuenow="45", aria-valuemin="0", aria-valuemax="100")
+      .col-md-5
+        a.hide.btn.btn-default.play-btn(data-toggle="tooltip", title="Play/pause log file", data-placement="bottom")
+          i.icon-play
+        a.btn.btn-default.file-btn(data-toggle="tooltip", title="Open a local log file", data-placement="bottom")
+          i.icon-file
+        a.btn.btn-default.fullscreen-btn(data-toggle="tooltip", title="Fullscreen", data-placement="bottom")
+          i.icon-fullscreen
 
   script(src="lib/js/jquery.min.js")
   script(src="lib/js/bootstrap.min.js")
