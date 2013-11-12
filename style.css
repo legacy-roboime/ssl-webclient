@@ -1,5 +1,13 @@
 .controls {
   float: right;
+  width: 30%;
+  min-width: 400px;
+}
+.controls [class*="col-"] {
+  padding: 1px;
+}
+.controls .btn {
+  margin: 0 2px 0;
 }
 #info.container {
   padding-top: 5px

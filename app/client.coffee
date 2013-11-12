@@ -224,7 +224,11 @@ drawField = (field_geometry, is_blue_left=true) ->
     .attr("x", (f) -> f.field_length / 2 - sp)
     .attr("y", (f) -> -f.field_width / 2 + sp)
 
-drawRobots = (robots, color) ->
+# in miliseconds
+max_screen_time = 30
+
+drawRobots = (robots, color, timestamp) ->
+  timestampify(robots, timestamp)
 
   robot = svg.selectAll(".robot.#{color}").data(robots, (d) -> d.robot_id)
 
@@ -239,8 +243,12 @@ drawRobots = (robots, color) ->
     .attr("d", robot_path)
     .attr("transform", robot_transform)
 
-  #robot.exit()
-  #  .remove()
+  robot.exit()
+    .filter (d) ->
+      # delete if either it doesn't have a timestamp, its screen time has expired
+      # or its timestamp is at the future
+      not d.timestamp? or timestamp - d.timestamp > max_screen_time or d.timestamp > timestamp
+    .remove()
 
   label = svg.selectAll(".robot-label.#{color}").data(robots, (d) -> d.robot_id)
 
@@ -257,12 +265,19 @@ drawRobots = (robots, color) ->
     .attr("x", (r) -> r.x)
     .attr("y", (r) -> -r.y)
 
-  #label.exit()
-  #  .remove()
+  label.exit()
+    .filter (d) ->
+      # delete if either it doesn't have a timestamp, its screen time has expired
+      # or its timestamp is at the future
+      not d.timestamp? or timestamp - d.timestamp > max_screen_time or d.timestamp > timestamp
+    .remove()
 
-drawBalls = (balls) ->
+drawBalls = (balls, timestamp) ->
+  timestampify(balls, timestamp)
 
-  ball = svg.selectAll(".ball").data(balls)
+  ball = svg.selectAll(".ball")
+    .data(balls)
+
 
   ball
     .attr("cx", (b) -> b.x)
@@ -275,8 +290,12 @@ drawBalls = (balls) ->
     .attr("cx", (b) -> b.x)
     .attr("cy", (b) -> -b.y)
 
-  #ball.exit()
-  #  .remove()
+  ball.exit()
+    .filter (d) ->
+      # delete if either it doesn't have a timestamp, its screen time has expired
+      # or its timestamp is at the future
+      not d.timestamp? or timestamp - d.timestamp > max_screen_time or d.timestamp > timestamp
+    .remove()
 
 pad = (n, width, z) ->
   z = z || "0"
@@ -314,13 +333,18 @@ updateRefereeState = (referee, is_blue_left=true) ->
   #blue_team.select(".team_name").html((d) -> d.name)
   #blue_team.select(".score").html((d) -> d.score)
 
-updateVisionState = (vision) ->
+timestampify = (data, timestamp) ->
+  data.map (d) ->
+    d.timestamp = timestamp
+    return d
+
+updateVisionState = (vision, timestamp=new Date()) ->
   {detection, geometry} = vision
 
   if detection?
-    drawRobots detection.robots_yellow, "yellow"
-    drawRobots detection.robots_blue, "blue"
-    drawBalls detection.balls
+    drawRobots detection.robots_yellow, "yellow", timestamp
+    drawRobots detection.robots_blue, "blue", timestamp
+    drawBalls  detection.balls, timestamp
 
   if geometry?
     drawField geometry.field
@@ -349,16 +373,17 @@ drawField(default_geometry_field)
 # XXX: why do we need this? bug??
 window.ProtoBuf = dcodeIO.ProtoBuf
 
-window.logparser = class LogParser
+class LogParser
 
   header = "SSL_LOG_FILE"
   vision_builder = dcodeIO.ProtoBuf.protoFromFile("protos/messages_robocup_ssl_wrapper.proto").build("SSL_WrapperPacket")
   refbox_builder = dcodeIO.ProtoBuf.protoFromFile("protos/referee.proto").build("SSL_Referee")
 
-  constructor: (@buffer) ->
+  constructor: (@buffer, @progress_step=10000) ->
     # SSL_LOG_FILE + version (uint32)
     @offset = header.length + 4
     @dataview = new DataView(@buffer)
+    @last_progress = 0
 
     unless @check_type()
       throw new Error("Invalid file format")
@@ -375,6 +400,7 @@ window.logparser = class LogParser
   # http://robocupssl.cpe.ku.ac.th/gamelogs
   parse_packet: ->
     # TODO: worry about endianess
+    offset = @offset
     timestamp = new Date(dcodeIO.Long.fromBits(@dataview.getUint32(@offset + 4), @dataview.getUint32(@offset)).toNumber() / 1000 / 1000)
     type = @dataview.getUint32(@offset + 8)
     size = @dataview.getUint32(@offset + 12)
@@ -396,54 +422,159 @@ window.logparser = class LogParser
       timestamp: timestamp
       type: type
       packet: packet
+      offset: offset
     }
 
-  all: (cb) ->
-    console.log("parsing...")
+  all: (cb, done=->) ->
     while @offset < @buffer.byteLength - 1
-      cb(@parse_packet())
-    console.log("...done")
+      packet = @parse_packet()
+      # async call
+      #setTimeout -> cb(packet)
+      # sync call
+      cb(packet)
+    done()
 
   rewind: ->
     @offset = header.length + 4
 
-  play: (cb) ->
+  pause: ->
+    clearTimeout(@_next)
+    @playing = false
+
+  start: (cb, done=->) ->
+    @cb = cb
+    @done = done
+    @play()
+
+  play: ->
+    @playing = true
+    @_play(@cb, @done)
+
+  _play: (cb, done) ->
     # XXX: notice we're skipping the first packet
-    if @offset < @buffer.byteLength - 1
+    if @offset < @buffer.byteLength - 1 and @playing
       @previous = @previous || @parse_packet()
       @current = @parse_packet()
       delta = @current.timestamp - @previous.timestamp
       delta = 0 if delta < 0
-      setTimeout (=> @play(cb)), delta
+      @_next = setTimeout (=> @_play(cb)), delta
       @previous = @current
       cb(@current)
     else
-      console.log("reached end")
+      done()
+      console.log("stopped")
 
-window.packets = _packets = []
-log_reader = new FileReader()
-log_reader.onload = (e) ->
-  window.result = log_reader.result
-  log_parser = new LogParser(log_reader.result)
-  #_packets = []
-  #log_parser.all (packet) ->
-  #  #console.log(packet[0])
-  #  _packets.push(packet)
+  cache_offsets: (cb, done=->) ->
+    @offsets = []
+    until @offset >= @buffer.byteLength
+      offset = @offset
+      timestamp = new Date(dcodeIO.Long.fromBits(@dataview.getUint32(@offset + 4), @dataview.getUint32(@offset)).toNumber() / 1000 / 1000)
+      size = @dataview.getUint32(@offset + 12)
+      @offset += 16 + size
+      packet =
+        timestamp: timestamp
+        packet: packet
+        offset: offset
+      @offsets.push(packet)
+      #@last_progress = @progress_step
+      #cb(packet, @buffer.byteLength)
+    @rewind()
+    done()
 
+
+playCallback = (p) ->
+  console.log("render")
+  switch p.type
+    when 2
+      updateVisionState p.packet, p.timestamp
+    when 3
+      updateRefereeState p.packet, p.timestamp
+    else
+      console.log p
+
+
+$(".play-btn").on "click", (e) ->
+  e.preventDefault()
   # Play the file NOW and use the given callback
-  log_parser.play (p) ->
-    console.log("render")
-    switch p.type
-      when 2
-        updateVisionState p.packet
-      when 3
-        updateRefereeState p.packet
-      else
-        console.log p
+  if log_parser?
+    i = $(this).find("i")
+    if log_parser.playing
+      console.log("pause")
+      log_parser.pause()
+      i.addClass("icon-play")
+      i.removeClass("icon-pause")
+    else
+      console.log("play")
+      log_parser.play()
+      i.removeClass("icon-play")
+      i.addClass("icon-pause")
 
+autoplay = true
+cache_offsets = false or true
+log_reader = new FileReader()
+log_parser = null
+
+_parse_bar = $(".file-progress .parse-progress")
+cacheOffsetCallback = (packet, byteLength) ->
+  progress = 100 * packet.offset / byteLength
+  _parse_bar.attr("style", "width: #{progress}%;")
+
+$(".file-btn").on "click", (e) ->
+  e.preventDefault()
+  $("#file-input").trigger("click")
 
 $("#file-input").on "change", (e) ->
+  # setup actions for when the file is loaded
+  log_reader.onloadstart = ->
+    $(".file-progress").show()
+
+  log_reader.onprogress = (e) ->
+    if e.lengthComputable
+      percentage = Math.round((e.loaded * 100) / e.total)
+      $(".file-progress .load-progress").attr("style", "width: #{percentage}%;")
+
+  log_reader.onload = (e) ->
+
+    #DEBUG:
+    #window.result = log_reader.result
+
+    # clear stuff related to the current logplay
+    if log_parser
+      log_parser.pause()
+    window.log_parser = log_parser = new LogParser(log_reader.result)
+
+    init = ->
+      if autoplay
+        #$(".file-progress").hide()
+        log_parser.start playCallback
+        i = $(".play-btn i")
+        i.removeClass("icon-play")
+        i.addClass("icon-pause")
+
+      # show the button when we're ready to play
+      $(".file-progress").hide()
+      $(".play-btn").removeClass("hide")
+
+    if cache_offsets
+      console.log("caching offsets...")
+      t1 = new Date()
+      log_parser.cache_offsets cacheOffsetCallback, ->
+        t2 = new Date()
+        console.log("cached #{log_parser.offsets.length} offsets in #{t2 - t1}ms")
+        init()
+    else
+      init()
+
+  # MUST read as ArrayBuffer, unhide the play/pause button
   log_reader.readAsArrayBuffer(f) for f in e.target.files
+
+$(".player-slider").on "click", ->
+  log_parser.pause()
+  pos = Math.floor(log_parser.offsets.length * $(this).val() / 100)
+  offset = log_parser.offsets[pos].offset
+  console.log("Jumping to position #{pos} with offset #{offset}")
+  log_parser.offset = offset
+  log_parser.start playCallback
 
 # ---------------------------
 

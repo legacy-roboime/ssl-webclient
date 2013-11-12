@@ -12,8 +12,16 @@
     <li><span id="team_blue"><span class="team_name">--</span>&nbsp;<span class="score badge">-</span></span><span>&nbsp;&times;&nbsp;</span><span id="team_yellow"><span class="score badge">-</span>&nbsp;<span class="team_name">--</span></span></li>
     <li><i class="icon-time"></i>&nbsp;<span id="time_left">--</span></li>
     -->
-    <div class="controls">
-      <input type="file" id="file-input"><a data-toggle="tooltip" title="Fullscreen" data-placement="bottom" class="btn btn-default fullscreen-btn"><i class="icon-fullscreen"></i></a>
+    <input id="file-input" type="file" class="hide">
+    <div class="controls row">
+      <div class="col-md-7">
+        <input type="range" class="player-slider">
+        <div style="display: none" class="file-progress progress progress-striped active">
+          <div role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" class="parse-progress progress-bar progress-bar-info"></div>
+          <div role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" class="load-progress progress-bar progress-bar-success"></div>
+        </div>
+      </div>
+      <div class="col-md-5"><a data-toggle="tooltip" title="Play/pause log file" data-placement="bottom" class="hide btn btn-default play-btn"><i class="icon-play"></i></a><a data-toggle="tooltip" title="Open a local log file" data-placement="bottom" class="btn btn-default file-btn"><i class="icon-file"></i></a><a data-toggle="tooltip" title="Fullscreen" data-placement="bottom" class="btn btn-default fullscreen-btn"><i class="icon-fullscreen"></i></a></div>
     </div>
   </div>
   <script src="lib/js/jquery.min.js"></script>

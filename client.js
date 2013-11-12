@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 
 
 (function() {
-  var LogParser, ball_radius, default_geometry_field, drawBalls, drawField, drawRobots, field_path, inner_height, inner_width, left_goal_path, log_reader, pad, right_goal_path, robot_front_cut, robot_label, robot_path, robot_radius, robot_transform, socket, svg, ticks_to_time, updateRefereeState, updateVisionState, _packets;
+  var LogParser, autoplay, ball_radius, cacheOffsetCallback, cache_offsets, default_geometry_field, drawBalls, drawField, drawRobots, field_path, inner_height, inner_width, left_goal_path, log_parser, log_reader, max_screen_time, pad, playCallback, right_goal_path, robot_front_cut, robot_label, robot_path, robot_radius, robot_transform, socket, svg, ticks_to_time, timestampify, updateRefereeState, updateVisionState, _parse_bar;
 
   inner_width = 7200;
 
@@ -111,13 +111,19 @@ GNU Affero General Public License for more details.
     });
   };
 
-  drawRobots = function(robots, color) {
+  max_screen_time = 30;
+
+  drawRobots = function(robots, color, timestamp) {
     var label, robot;
+    timestampify(robots, timestamp);
     robot = svg.selectAll(".robot." + color).data(robots, function(d) {
       return d.robot_id;
     });
     robot.attr("d", robot_path).attr("transform", robot_transform);
     robot.enter().append("path").classed("robot", true).classed(color, true).attr("d", robot_path).attr("transform", robot_transform);
+    robot.exit().filter(function(d) {
+      return (d.timestamp == null) || timestamp - d.timestamp > max_screen_time || d.timestamp > timestamp;
+    }).remove();
     label = svg.selectAll(".robot-label." + color).data(robots, function(d) {
       return d.robot_id;
     });
@@ -126,26 +132,33 @@ GNU Affero General Public License for more details.
     }).attr("y", function(r) {
       return -r.y;
     });
-    return label.enter().append("text").classed("robot-label", true).classed(color, true).text(robot_label).attr("x", function(r) {
+    label.enter().append("text").classed("robot-label", true).classed(color, true).text(robot_label).attr("x", function(r) {
       return r.x;
     }).attr("y", function(r) {
       return -r.y;
     });
+    return label.exit().filter(function(d) {
+      return (d.timestamp == null) || timestamp - d.timestamp > max_screen_time || d.timestamp > timestamp;
+    }).remove();
   };
 
-  drawBalls = function(balls) {
+  drawBalls = function(balls, timestamp) {
     var ball;
+    timestampify(balls, timestamp);
     ball = svg.selectAll(".ball").data(balls);
     ball.attr("cx", function(b) {
       return b.x;
     }).attr("cy", function(b) {
       return -b.y;
     });
-    return ball.enter().append("circle").classed("ball", true).attr("r", ball_radius).attr("cx", function(b) {
+    ball.enter().append("circle").classed("ball", true).attr("r", ball_radius).attr("cx", function(b) {
       return b.x;
     }).attr("cy", function(b) {
       return -b.y;
     });
+    return ball.exit().filter(function(d) {
+      return (d.timestamp == null) || timestamp - d.timestamp > max_screen_time || d.timestamp > timestamp;
+    }).remove();
   };
 
   pad = function(n, width, z) {
@@ -187,13 +200,23 @@ GNU Affero General Public License for more details.
     });
   };
 
-  updateVisionState = function(vision) {
+  timestampify = function(data, timestamp) {
+    return data.map(function(d) {
+      d.timestamp = timestamp;
+      return d;
+    });
+  };
+
+  updateVisionState = function(vision, timestamp) {
     var detection, geometry;
+    if (timestamp == null) {
+      timestamp = new Date();
+    }
     detection = vision.detection, geometry = vision.geometry;
     if (detection != null) {
-      drawRobots(detection.robots_yellow, "yellow");
-      drawRobots(detection.robots_blue, "blue");
-      drawBalls(detection.balls);
+      drawRobots(detection.robots_yellow, "yellow", timestamp);
+      drawRobots(detection.robots_blue, "blue", timestamp);
+      drawBalls(detection.balls, timestamp);
     }
     if (geometry != null) {
       return drawField(geometry.field);
@@ -216,7 +239,7 @@ GNU Affero General Public License for more details.
 
   window.ProtoBuf = dcodeIO.ProtoBuf;
 
-  window.logparser = LogParser = (function() {
+  LogParser = (function() {
     var header, refbox_builder, vision_builder;
 
     header = "SSL_LOG_FILE";
@@ -225,11 +248,13 @@ GNU Affero General Public License for more details.
 
     refbox_builder = dcodeIO.ProtoBuf.protoFromFile("protos/referee.proto").build("SSL_Referee");
 
-    function LogParser(buffer) {
+    function LogParser(buffer, progress_step) {
       var ver;
       this.buffer = buffer;
+      this.progress_step = progress_step != null ? progress_step : 10000;
       this.offset = header.length + 4;
       this.dataview = new DataView(this.buffer);
+      this.last_progress = 0;
       if (!this.check_type()) {
         throw new Error("Invalid file format");
       }
@@ -247,7 +272,8 @@ GNU Affero General Public License for more details.
     };
 
     LogParser.prototype.parse_packet = function() {
-      var e, packet, size, timestamp, type;
+      var e, offset, packet, size, timestamp, type;
+      offset = this.offset;
       timestamp = new Date(dcodeIO.Long.fromBits(this.dataview.getUint32(this.offset + 4), this.dataview.getUint32(this.offset)).toNumber() / 1000 / 1000);
       type = this.dataview.getUint32(this.offset + 8);
       size = this.dataview.getUint32(this.offset + 12);
@@ -273,69 +299,187 @@ GNU Affero General Public License for more details.
       return {
         timestamp: timestamp,
         type: type,
-        packet: packet
+        packet: packet,
+        offset: offset
       };
     };
 
-    LogParser.prototype.all = function(cb) {
-      console.log("parsing...");
-      while (this.offset < this.buffer.byteLength - 1) {
-        cb(this.parse_packet());
+    LogParser.prototype.all = function(cb, done) {
+      var packet;
+      if (done == null) {
+        done = function() {};
       }
-      return console.log("...done");
+      while (this.offset < this.buffer.byteLength - 1) {
+        packet = this.parse_packet();
+        cb(packet);
+      }
+      return done();
     };
 
     LogParser.prototype.rewind = function() {
       return this.offset = header.length + 4;
     };
 
-    LogParser.prototype.play = function(cb) {
+    LogParser.prototype.pause = function() {
+      clearTimeout(this._next);
+      return this.playing = false;
+    };
+
+    LogParser.prototype.start = function(cb, done) {
+      if (done == null) {
+        done = function() {};
+      }
+      this.cb = cb;
+      this.done = done;
+      return this.play();
+    };
+
+    LogParser.prototype.play = function() {
+      this.playing = true;
+      return this._play(this.cb, this.done);
+    };
+
+    LogParser.prototype._play = function(cb, done) {
       var delta,
         _this = this;
-      if (this.offset < this.buffer.byteLength - 1) {
+      if (this.offset < this.buffer.byteLength - 1 && this.playing) {
         this.previous = this.previous || this.parse_packet();
         this.current = this.parse_packet();
         delta = this.current.timestamp - this.previous.timestamp;
         if (delta < 0) {
           delta = 0;
         }
-        setTimeout((function() {
-          return _this.play(cb);
+        this._next = setTimeout((function() {
+          return _this._play(cb);
         }), delta);
         this.previous = this.current;
         return cb(this.current);
       } else {
-        return console.log("reached end");
+        done();
+        return console.log("stopped");
       }
+    };
+
+    LogParser.prototype.cache_offsets = function(cb, done) {
+      var offset, packet, size, timestamp;
+      if (done == null) {
+        done = function() {};
+      }
+      this.offsets = [];
+      while (!(this.offset >= this.buffer.byteLength)) {
+        offset = this.offset;
+        timestamp = new Date(dcodeIO.Long.fromBits(this.dataview.getUint32(this.offset + 4), this.dataview.getUint32(this.offset)).toNumber() / 1000 / 1000);
+        size = this.dataview.getUint32(this.offset + 12);
+        this.offset += 16 + size;
+        packet = {
+          timestamp: timestamp,
+          packet: packet,
+          offset: offset
+        };
+        this.offsets.push(packet);
+      }
+      this.rewind();
+      return done();
     };
 
     return LogParser;
 
   })();
 
-  window.packets = _packets = [];
+  playCallback = function(p) {
+    console.log("render");
+    switch (p.type) {
+      case 2:
+        return updateVisionState(p.packet, p.timestamp);
+      case 3:
+        return updateRefereeState(p.packet, p.timestamp);
+      default:
+        return console.log(p);
+    }
+  };
+
+  $(".play-btn").on("click", function(e) {
+    var i;
+    e.preventDefault();
+    if (typeof log_parser !== "undefined" && log_parser !== null) {
+      i = $(this).find("i");
+      if (log_parser.playing) {
+        console.log("pause");
+        log_parser.pause();
+        i.addClass("icon-play");
+        return i.removeClass("icon-pause");
+      } else {
+        console.log("play");
+        log_parser.play();
+        i.removeClass("icon-play");
+        return i.addClass("icon-pause");
+      }
+    }
+  });
+
+  autoplay = true;
+
+  cache_offsets = false || true;
 
   log_reader = new FileReader();
 
-  log_reader.onload = function(e) {
-    var log_parser;
-    window.result = log_reader.result;
-    log_parser = new LogParser(log_reader.result);
-    return log_parser.play(function(p) {
-      console.log("render");
-      switch (p.type) {
-        case 2:
-          return updateVisionState(p.packet);
-        case 3:
-          return updateRefereeState(p.packet);
-        default:
-          return console.log(p);
-      }
-    });
+  log_parser = null;
+
+  _parse_bar = $(".file-progress .parse-progress");
+
+  cacheOffsetCallback = function(packet, byteLength) {
+    var progress;
+    progress = 100 * packet.offset / byteLength;
+    return _parse_bar.attr("style", "width: " + progress + "%;");
   };
+
+  $(".file-btn").on("click", function(e) {
+    e.preventDefault();
+    return $("#file-input").trigger("click");
+  });
 
   $("#file-input").on("change", function(e) {
     var f, _i, _len, _ref, _results;
+    log_reader.onloadstart = function() {
+      return $(".file-progress").show();
+    };
+    log_reader.onprogress = function(e) {
+      var percentage;
+      if (e.lengthComputable) {
+        percentage = Math.round((e.loaded * 100) / e.total);
+        return $(".file-progress .load-progress").attr("style", "width: " + percentage + "%;");
+      }
+    };
+    log_reader.onload = function(e) {
+      var init, t1;
+      if (log_parser) {
+        log_parser.pause();
+      }
+      window.log_parser = log_parser = new LogParser(log_reader.result);
+      init = function() {
+        var i;
+        if (autoplay) {
+          log_parser.start(playCallback);
+          i = $(".play-btn i");
+          i.removeClass("icon-play");
+          i.addClass("icon-pause");
+        }
+        $(".file-progress").hide();
+        return $(".play-btn").removeClass("hide");
+      };
+      if (cache_offsets) {
+        console.log("caching offsets...");
+        t1 = new Date();
+        return log_parser.cache_offsets(cacheOffsetCallback, function() {
+          var t2;
+          t2 = new Date();
+          console.log("cached " + log_parser.offsets.length + " offsets in " + (t2 - t1) + "ms");
+          return init();
+        });
+      } else {
+        return init();
+      }
+    };
     _ref = e.target.files;
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -343,6 +487,16 @@ GNU Affero General Public License for more details.
       _results.push(log_reader.readAsArrayBuffer(f));
     }
     return _results;
+  });
+
+  $(".player-slider").on("click", function() {
+    var offset, pos;
+    log_parser.pause();
+    pos = Math.floor(log_parser.offsets.length * $(this).val() / 100);
+    offset = log_parser.offsets[pos].offset;
+    console.log("Jumping to position " + pos + " with offset " + offset);
+    log_parser.offset = offset;
+    return log_parser.start(playCallback);
   });
 
   socket = io.connect();
