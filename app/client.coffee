@@ -239,8 +239,8 @@ drawRobots = (robots, color) ->
     .attr("d", robot_path)
     .attr("transform", robot_transform)
 
-  robot.exit()
-    .remove()
+  #robot.exit()
+  #  .remove()
 
   label = svg.selectAll(".robot-label.#{color}").data(robots, (d) -> d.robot_id)
 
@@ -257,8 +257,8 @@ drawRobots = (robots, color) ->
     .attr("x", (r) -> r.x)
     .attr("y", (r) -> -r.y)
 
-  label.exit()
-    .remove()
+  #label.exit()
+  #  .remove()
 
 drawBalls = (balls) ->
 
@@ -275,8 +275,8 @@ drawBalls = (balls) ->
     .attr("cx", (b) -> b.x)
     .attr("cy", (b) -> -b.y)
 
-  ball.exit()
-    .remove()
+  #ball.exit()
+  #  .remove()
 
 pad = (n, width, z) ->
   z = z || "0"
@@ -414,8 +414,9 @@ window.logparser = class LogParser
       @current = @parse_packet()
       delta = @current.timestamp - @previous.timestamp
       delta = 0 if delta < 0
-      cb(@current)
       setTimeout (=> @play(cb)), delta
+      @previous = @current
+      cb(@current)
     else
       console.log("reached end")
 
@@ -431,6 +432,7 @@ log_reader.onload = (e) ->
 
   # Play the file NOW and use the given callback
   log_parser.play (p) ->
+    console.log("render")
     switch p.type
       when 2
         updateVisionState p.packet
