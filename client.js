@@ -302,6 +302,8 @@ GNU Affero General Public License for more details.
         packet: packet,
         offset: offset
       };
+      this.cb = function() {};
+      return this.done = function() {};
     };
 
     LogParser.prototype.all = function(cb, done) {
@@ -355,7 +357,7 @@ GNU Affero General Public License for more details.
         this.previous = this.current;
         return cb(this.current);
       } else {
-        done();
+        this.done();
         return console.log("stopped");
       }
     };
@@ -451,11 +453,24 @@ GNU Affero General Public License for more details.
       }
     };
     log_reader.onload = function(e) {
-      var init, t1;
+      var init, t1, unzip, zip;
+      window.result = log_reader.result;
       if (log_parser) {
         log_parser.pause();
       }
-      window.log_parser = log_parser = new LogParser(log_reader.result);
+      try {
+        log_parser = new LogParser(log_reader.result);
+      } catch (_error) {
+        e = _error;
+        try {
+          unzip = new Zlib.Gunzip(new Uint8Array(log_reader.result));
+          log_parser = new LogParser(unzip.decompress().buffer);
+        } catch (_error) {
+          zip = new JSZip(log_reader.result);
+          log_parser = new LogParser(zip.file(/.*\.log$/)[0].asArrayBuffer());
+        }
+      }
+      window.log_parser = log_parser;
       init = function() {
         var i;
         if (autoplay) {
