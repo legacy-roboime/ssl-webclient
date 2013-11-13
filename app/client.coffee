@@ -535,13 +535,20 @@ $("#file-input").on "change", (e) ->
 
   log_reader.onload = (e) ->
 
-    #DEBUG:
-    #window.result = log_reader.result
+    # DEBUG:
+    window.result = log_reader.result
 
     # clear stuff related to the current logplay
     if log_parser
       log_parser.pause()
-    window.log_parser = log_parser = new LogParser(log_reader.result)
+    # TODO: warn user about the error
+    # TODO: allow multi file select with a drop box to pos-choose the file
+    try
+      window.log_parser = log_parser = new LogParser(log_reader.result)
+    catch e
+      window.zip = new JSZip(log_reader.result)
+      # XXX: getting the first file that ends with .log
+      window.log_parser = log_parser = new LogParser(zip.file(/.*\.log$/)[0].asArrayBuffer())
 
     init = ->
       if autoplay

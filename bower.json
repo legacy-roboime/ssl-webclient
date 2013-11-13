@@ -13,7 +13,8 @@
     "screenfull": "~1.1",
     "bytebuffer": "",
     "protobuf": "",
-    "long": ""
+    "long": "",
+    "jszip": "Stuk/jszip"
   },
   "exportsOverride": {
     "socket.io-client": {
@@ -45,6 +46,9 @@
     },
     "long": {
       "js": ["*.js", "*.map"]
+    },
+    "jszip": {
+      "js": "jszip*.js"
     }
   }
 }
