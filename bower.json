@@ -14,7 +14,8 @@
     "bytebuffer": "",
     "protobuf": "",
     "long": "",
-    "jszip": "Stuk/jszip"
+    "jszip": "Stuk/jszip",
+    "zlib.js": "imaya/zlib.js"
   },
   "exportsOverride": {
     "socket.io-client": {
@@ -49,6 +50,9 @@
     },
     "jszip": {
       "js": "jszip*.js"
+    },
+    "zlib.js": {
+      "js": ["bin/*.js", "bin/*.map"]
     }
   }
 }

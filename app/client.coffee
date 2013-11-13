@@ -424,6 +424,9 @@ class LogParser
       packet: packet
       offset: offset
     }
+    # stubs
+    @cb = ->
+    @done = ->
 
   all: (cb, done=->) ->
     while @offset < @buffer.byteLength - 1
@@ -461,7 +464,7 @@ class LogParser
       @previous = @current
       cb(@current)
     else
-      done()
+      @done()
       console.log("stopped")
 
   cache_offsets: (cb, done=->) ->
@@ -544,11 +547,20 @@ $("#file-input").on "change", (e) ->
     # TODO: warn user about the error
     # TODO: allow multi file select with a drop box to pos-choose the file
     try
-      window.log_parser = log_parser = new LogParser(log_reader.result)
+      log_parser = new LogParser(log_reader.result)
     catch e
-      window.zip = new JSZip(log_reader.result)
-      # XXX: getting the first file that ends with .log
-      window.log_parser = log_parser = new LogParser(zip.file(/.*\.log$/)[0].asArrayBuffer())
+      # it didn't work, let's try gunzipping
+      try
+        unzip = new Zlib.Gunzip(new Uint8Array(log_reader.result))
+        log_parser = new LogParser(unzip.decompress().buffer)
+      catch
+        # that didn't work either, what about unzipping?
+        zip = new JSZip(log_reader.result)
+        # XXX: getting the first file that ends with .log
+        log_parser = new LogParser(zip.file(/.*\.log$/)[0].asArrayBuffer())
+
+    # DEBUG:
+    window.log_parser = log_parser
 
     init = ->
       if autoplay
