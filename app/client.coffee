@@ -133,8 +133,8 @@ field_path = (g) ->
   path += # right penalty spot
   """
   M #{g.field_length / 2 - g.penalty_spot_from_field_line_dist - g.line_width} 0
-  a #{1 * g.line_width} #{1 * g.line_width} 0 0 1 #{2 * g.line_width} 0
   a #{1 * g.line_width} #{1 * g.line_width} 0 0 1-#{2 * g.line_width} 0
+  a #{1 * g.line_width} #{1 * g.line_width} 0 0 1 #{2 * g.line_width} 0
   """
   path += # close it
   """
