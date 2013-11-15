@@ -180,7 +180,7 @@ robot_path = (r) ->
   """
 
 robot_transform = (r) ->
-  "rotate(#{(180 * r.orientation / Math.PI).toFixed(4)}, #{r.x.toFixed(4)}, #{(-r.y).toFixed(4)})"
+  "rotate(#{(-180 * r.orientation / Math.PI).toFixed(4)}, #{r.x.toFixed(4)}, #{(-r.y).toFixed(4)})"
 
 ball_radius = 21.5
 
