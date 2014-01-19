@@ -661,7 +661,7 @@ $("#file-input").on "change", (e) ->
 # ---------------------------
 
 #socket = io.connect('http://ssl-webclient.roboime.com:8888/')
-socket = io.connect('http://127.0.0.1:8888')
+socket = io.connect()
 
 socket.on "vision_packet", (packet) ->
   updateVisionState packet
@@ -691,4 +691,5 @@ $("#console_canvas input").on "keydown", (evt) ->
   obj.args.splice(obj.args.length - 1, 1)
   $("#cout").append "<div>" + command + "</div>"
   socket.emit "cmd_packet", obj
+  $(this).val('')
 

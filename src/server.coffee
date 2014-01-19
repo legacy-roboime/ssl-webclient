@@ -71,8 +71,8 @@ io.sockets.on "connection", (socket) ->
     io.sockets.emit "refbox_packet", packet
 
   socket.on "cmd_packet", (packet) ->
-    #if debug
-    console.log packet
+    if debug
+      console.log packet
 
     # Forward packet to zmq
-    zmq_publisher.send(packet); 
+    zmq_publisher.send(packet)
