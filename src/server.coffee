@@ -14,9 +14,19 @@ GNU Affero General Public License for more details.
 
 express = require("express")
 socketio = require("socket.io")
+
+zmq = require("zmq")
+
 {join} = require("path")
 config = require("config")
-{http, debug} = config
+{http, debug, zmq_conf} = config
+
+zmq_subscriber = zmq.socket("pull");
+zmq_publisher = zmq.socket("push");
+zmq_publisher.bind "tcp://" + zmq_conf.address + ":" + zmq_conf.push_port
+zmq_subscriber.bind "tcp://" + zmq_conf.address + ":" + zmq_conf.pull_port
+console.log "publishing to tcp://" + zmq_conf.address + ":" + zmq_conf.push_port
+console.log "subscribing to tcp://" + zmq_conf.address + ":" + zmq_conf.pull_port
 
 app = express()
 app.get '/*', (req, res, next) ->
@@ -26,6 +36,7 @@ app.get '/*', (req, res, next) ->
 app.use express.static(join(__dirname, "..", "public"))
 
 port = process.env.PORT || http.port
+console.log "HTTP server listening on port " + port
 addr = http.address
 io = socketio.listen(app.listen(port, addr))
 io.set "log level", 1
@@ -34,10 +45,10 @@ if process.env.LONGPOLLING is "true"
   io.set "transports", ["xhr-polling"]
   io.set "polling duration", 10
 
-# this is so the server is also a local vision listener
-if config.self_tunnel
-  tunneler = require("./tunneler")
-  tunneler io.sockets
+# this is so the server is also a local vision listener... for now
+console.log "Self tunneling activated"
+tunneler = require("./tunneler")
+tunneler io.sockets
 
 io.sockets.on "connection", (socket) ->
 
@@ -58,3 +69,10 @@ io.sockets.on "connection", (socket) ->
 
     # Forward packet to all the client sockets.
     io.sockets.emit "refbox_packet", packet
+
+  socket.on "cmd_packet", (packet) ->
+    #if debug
+    console.log packet
+
+    # Forward packet to zmq
+    zmq_publisher.send(packet); 

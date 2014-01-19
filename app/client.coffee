@@ -598,7 +598,7 @@ $(".player-slider").on "click", ->
 # ---------------------------
 
 #socket = io.connect('http://ssl-webclient.roboime.com:8888/')
-socket = io.connect()
+socket = io.connect('http://127.0.0.1:8888')
 
 socket.on "vision_packet", (packet) ->
   updateVisionState packet
@@ -612,3 +612,20 @@ $ ->
   $(".fullscreen-btn").click ->
     if screenfull.enabled
       screenfull.toggle(field)
+
+$("#console_canvas input").on "keydown", (evt) ->
+  if evt.keyCode != 13
+      return
+  command = this.value
+  split = command.split(' ')
+  obj = 
+    method: ""
+    args: []
+  if split.length == 0
+    return
+  obj.cmd = split[0]
+  obj.args.push(split[i]) for i in [1..split.length]
+  obj.args.splice(obj.args.length - 1, 1)
+  $("#cout").append "<div>" + command + "</div>"
+  socket.emit "cmd_packet", obj
+

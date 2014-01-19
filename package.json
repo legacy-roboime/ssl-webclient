@@ -24,7 +24,8 @@
     "express": "~3.4.0",
     "protobufjs": "~1.1.6",
     "config": "~0.4.30",
-    "yaml": "~0.2.3"
+    "yaml": "~0.2.3",
+    "zmq": "~2.5.1"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

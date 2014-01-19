@@ -74,3 +74,26 @@ text.robot-label {
   fill: rgba(0, 0, 0, 0.4);
   font-size: 300px;
 }
+
+#console_canvas {
+  background: rgba(0, 0, 0, 0.85);
+  padding: 5px;
+  border-radius: 5px;
+  width: 600px;
+  position: fixed;
+  bottom: 0;
+}
+.console {
+    background: transparent;
+    color: white;
+    border: none;
+    font-family: monospace;
+    font-size: 14px;
+    display: block;
+    box-sizing: border-box;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    max-height: 86px;
+    margin: 5px;
+    width: 100%
+}
