@@ -133,8 +133,8 @@ field_path = (g) ->
   path += # right penalty spot
   """
   M #{g.field_length / 2 - g.penalty_spot_from_field_line_dist - g.line_width} 0
-  a #{1 * g.line_width} #{1 * g.line_width} 0 0 1 #{2 * g.line_width} 0
   a #{1 * g.line_width} #{1 * g.line_width} 0 0 1-#{2 * g.line_width} 0
+  a #{1 * g.line_width} #{1 * g.line_width} 0 0 1 #{2 * g.line_width} 0
   """
   path += # close it
   """
@@ -180,7 +180,7 @@ robot_path = (r) ->
   """
 
 robot_transform = (r) ->
-  "rotate(#{(180 * r.orientation / Math.PI).toFixed(4)}, #{r.x.toFixed(4)}, #{(-r.y).toFixed(4)})"
+  "rotate(#{(-180 * r.orientation / Math.PI).toFixed(4)}, #{r.x.toFixed(4)}, #{(-r.y).toFixed(4)})"
 
 ball_radius = 21.5
 
@@ -384,6 +384,8 @@ class LogParser
     @offset = header.length + 4
     @dataview = new DataView(@buffer)
     @last_progress = 0
+    # rough approximation if used without caching
+    @max_offset = @buffer.byteLength
 
     unless @check_type()
       throw new Error("Invalid file format")
@@ -435,7 +437,7 @@ class LogParser
       #setTimeout -> cb(packet)
       # sync call
       cb(packet)
-    done()
+    done.call(this)
 
   rewind: ->
     @offset = header.length + 4
@@ -448,6 +450,17 @@ class LogParser
     @cb = cb
     @done = done
     @play()
+
+  stop: ->
+    @pause()
+    @rewind()
+
+  jump: (offset) ->
+    @pause
+    setTimeout(=>
+      @offset = offset
+      @play()
+    , 300)
 
   play: ->
     @playing = true
@@ -462,9 +475,9 @@ class LogParser
       delta = 0 if delta < 0
       @_next = setTimeout (=> @_play(cb)), delta
       @previous = @current
-      cb(@current)
+      cb.call(this, @current)
     else
-      @done()
+      @done.call(this)
       console.log("stopped")
 
   cache_offsets: (cb, done=->) ->
@@ -481,12 +494,56 @@ class LogParser
       @offsets.push(packet)
       #@last_progress = @progress_step
       #cb(packet, @buffer.byteLength)
+    @max_offset = @offset
     @rewind()
     done()
 
+  # cannot use instance after calling this
+  destroy: ->
+    @stop()
+    @buffer = null
+
+# helper for createing throttled get/set functions
+# (good to create time/volume-slider, which are used as getter and setter)
+class GetSetHandler
+  constructor: (@getter, @setter) ->
+    @blocked = false
+
+  get: ->
+    return if @blocked
+    @getter.apply this, arguments
+
+  set: ->
+    clearTimeout @throttle_timer
+    clearTimeout @blocked_timer
+    args = arguments
+    @blocked = true
+    @throttle_timer = setTimeout(=>
+      @setter.apply this, args
+      @blocked_timer = setTimeout(=>
+        @blocked = false
+      , 30)
+    , 0)
+
+player_slider = $(".player-slider")
+slider_handler = new GetSetHandler(->
+    player_slider.val Math.floor(log_parser.offsets.length * log_parser.offset / log_parser.max_offset) if log_parser?
+  , ->
+    return unless log_parser?
+    pos = parseInt player_slider.val()
+    offset = log_parser.offsets[pos].offset
+    console.log("Jumping to position #{pos} with offset #{offset}")
+    log_parser.jump offset
+)
+
+player_slider.bind "input", -> slider_handler.set()
 
 playCallback = (p) ->
   console.log("render")
+
+  #player_slider.update(Math.round(100 * p.offset / @max_offset))
+  slider_handler.get()
+
   switch p.type
     when 2
       updateVisionState p.packet, p.timestamp
@@ -504,16 +561,15 @@ $(".play-btn").on "click", (e) ->
     if log_parser.playing
       console.log("pause")
       log_parser.pause()
-      i.addClass("icon-play")
-      i.removeClass("icon-pause")
+      i.addClass("fa-play")
+      i.removeClass("fa-pause")
     else
       console.log("play")
       log_parser.play()
-      i.removeClass("icon-play")
-      i.addClass("icon-pause")
+      i.removeClass("fa-play")
+      i.addClass("fa-pause")
 
 autoplay = true
-cache_offsets = false or true
 log_reader = new FileReader()
 log_parser = null
 
@@ -526,10 +582,62 @@ $(".file-btn").on "click", (e) ->
   e.preventDefault()
   $("#file-input").trigger("click")
 
+load_file = (file) ->
+  # clear stuff related to the current logplay
+  if log_parser
+    log_parser.destroy()
+  # TODO: warn user about the error
+  # TODO: allow multi file select with a drop box to pos-choose the file
+  # XXX: this is being done here in order to allow better visual feedback
+  #      about the decompression progress, as opposed to bloat the LogParser
+  #      class with gui stuff
+  try
+    log_parser = new LogParser(file)
+  catch e
+    # it didn't work, let's try gunzipping
+    try
+      unzip = new Zlib.Gunzip(new Uint8Array(file))
+      log_parser = new LogParser(unzip.decompress().buffer)
+    catch
+      # that didn't work either, what about unzipping?
+      zip = new JSZip(file)
+      # XXX: getting the first file that ends with .log
+      log_parser = new LogParser(zip.file(/.*\.log$/)[0].asArrayBuffer())
+
+  # DEBUG:
+  window.log_parser = log_parser
+
+  console.log("caching offsets...")
+  $(".file-progress .progress-desc").text("Caching binary positions...")
+  t1 = new Date()
+
+  # async call to allow drawing to occur
+  setTimeout ->
+    log_parser.cache_offsets cacheOffsetCallback, ->
+      t2 = new Date()
+      console.log("cached #{log_parser.offsets.length} offsets in #{t2 - t1}ms")
+
+      # show the button when we're ready to play
+      $(".file-progress").hide()
+      $(".file-progress .load-progress").attr("style", "width: 0%;")
+      $(".player-slider").show()
+      $(".player-slider").attr("max", log_parser.offsets.length)
+      $(".play-btn").show()
+
+      if autoplay
+        #$(".file-progress").hide()
+        log_parser.start playCallback
+        i = $(".play-btn i")
+        i.removeClass("fa-play")
+        i.addClass("fa-pause")
+
 $("#file-input").on "change", (e) ->
   # setup actions for when the file is loaded
   log_reader.onloadstart = ->
     $(".file-progress").show()
+    $(".file-progress .progress-desc").text("Loading file...")
+    $(".player-slider").hide()
+    $(".play-btn").hide()
 
   log_reader.onprogress = (e) ->
     if e.lengthComputable
@@ -538,62 +646,17 @@ $("#file-input").on "change", (e) ->
 
   log_reader.onload = (e) ->
 
-    # DEBUG:
-    window.result = log_reader.result
-
-    # clear stuff related to the current logplay
-    if log_parser
-      log_parser.pause()
-    # TODO: warn user about the error
-    # TODO: allow multi file select with a drop box to pos-choose the file
-    try
-      log_parser = new LogParser(log_reader.result)
-    catch e
-      # it didn't work, let's try gunzipping
-      try
-        unzip = new Zlib.Gunzip(new Uint8Array(log_reader.result))
-        log_parser = new LogParser(unzip.decompress().buffer)
-      catch
-        # that didn't work either, what about unzipping?
-        zip = new JSZip(log_reader.result)
-        # XXX: getting the first file that ends with .log
-        log_parser = new LogParser(zip.file(/.*\.log$/)[0].asArrayBuffer())
+    # async call to allow visual feedback
+    $(".file-progress .load-progress").attr("style", "width: 100%;")
 
     # DEBUG:
-    window.log_parser = log_parser
+    window.result = @result
 
-    init = ->
-      if autoplay
-        #$(".file-progress").hide()
-        log_parser.start playCallback
-        i = $(".play-btn i")
-        i.removeClass("icon-play")
-        i.addClass("icon-pause")
-
-      # show the button when we're ready to play
-      $(".file-progress").hide()
-      $(".play-btn").removeClass("hide")
-
-    if cache_offsets
-      console.log("caching offsets...")
-      t1 = new Date()
-      log_parser.cache_offsets cacheOffsetCallback, ->
-        t2 = new Date()
-        console.log("cached #{log_parser.offsets.length} offsets in #{t2 - t1}ms")
-        init()
-    else
-      init()
+    # async call to allow drawing to occur
+    setTimeout -> load_file(@result)
 
   # MUST read as ArrayBuffer, unhide the play/pause button
   log_reader.readAsArrayBuffer(f) for f in e.target.files
-
-$(".player-slider").on "click", ->
-  log_parser.pause()
-  pos = Math.floor(log_parser.offsets.length * $(this).val() / 100)
-  offset = log_parser.offsets[pos].offset
-  console.log("Jumping to position #{pos} with offset #{offset}")
-  log_parser.offset = offset
-  log_parser.start playCallback
 
 # ---------------------------
 

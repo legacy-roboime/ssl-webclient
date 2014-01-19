@@ -9,6 +9,15 @@
 .controls .btn {
   margin: 0 2px 0;
 }
+input.form-control[type="range"] {
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+.progress .progress-desc {
+  position: absolute;
+  left: 2px;
+}
 #info.container {
   padding-top: 5px
 }

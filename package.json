@@ -33,7 +33,7 @@
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-watch": "~0.5.1",
     "grunt-develop": "~0.2.2",
-    "grunt-bower-task": "~0.3.2",
+    "grunt-bower-task": "=0.3.2",
     "grunt-contrib-coffee": "~0.7.0",
     "grunt-contrib-jade": "~0.8.0"
   },
