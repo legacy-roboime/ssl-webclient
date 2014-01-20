@@ -21,8 +21,8 @@ zmq = require("zmq")
 config = require("config")
 {http, debug, zmq_conf} = config
 
-zmq_subscriber = zmq.socket("pull");
-zmq_publisher = zmq.socket("push");
+zmq_subscriber = zmq.socket("pull")
+zmq_publisher = zmq.socket("push")
 zmq_publisher.bind "tcp://" + zmq_conf.address + ":" + zmq_conf.push_port
 zmq_subscriber.bind "tcp://" + zmq_conf.address + ":" + zmq_conf.pull_port
 console.log "publishing to tcp://" + zmq_conf.address + ":" + zmq_conf.push_port

@@ -672,24 +672,14 @@ socket.on "refbox_packet", (packet) ->
 $ ->
   $("[data-toggle='tooltip']").tooltip()
   field = $("#field")[0]
+
   $(".fullscreen-btn").click ->
     if screenfull.enabled
       screenfull.toggle(field)
 
-$("#console_canvas input").on "keydown", (evt) ->
-  if evt.keyCode != 13
-      return
-  command = this.value
-  split = command.split(' ')
-  obj = 
-    method: ""
-    args: []
-  if split.length == 0
-    return
-  obj.cmd = split[0]
-  obj.args.push(split[i]) for i in [1..split.length]
-  obj.args.splice(obj.args.length - 1, 1)
-  $("#cout").append "<div>" + command + "</div>"
-  socket.emit "cmd_packet", obj
-  $(this).val('')
-
+  jscli.eval = (command) ->
+    split = command.split(' ')
+    socket.emit "cmd_packet",
+      cmd: split[0]
+      args: split[1..]
+    return "<div><span>#{command}</span><br>" # '<span class="success">' + String(window.eval(input)) + '</span><br></div>'

@@ -5,6 +5,7 @@ html(lang="en")
   link(rel="stylesheet", href="lib/css/bootstrap.min.css")
   link(rel="stylesheet", href="lib/css/bootstrap-theme.min.css")
   link(rel="stylesheet", href="lib/css/font-awesome.min.css")
+  link(rel="stylesheet", href="lib/css/jscli.css")
   link(rel="stylesheet", href="style.css")
 
   #field
@@ -43,9 +44,15 @@ html(lang="en")
         a.btn.btn-default.fullscreen-btn(data-toggle="tooltip", title="Fullscreen", data-placement="bottom")
           i.fa.fa-arrows-alt
 
-  #console_canvas
-      #cout.console
-      input#cin.console
+  //.console-container
+    #console_canvas.console
+        #cout
+        input#cin
+
+  .jscli-container
+    #wrap.jscli-wrap
+      #output.jscli
+      input#input.jscli
 
   script(src="lib/js/jquery.min.js")
   script(src="lib/js/bootstrap.min.js")
@@ -59,6 +66,7 @@ html(lang="en")
   script(src="lib/js/jszip-load.js")
   script(src="lib/js/jszip-inflate.js")
   script(src="lib/js/gunzip.min.js")
+  script(src="lib/js/jscli.js")
   script(src="client.js")
   if livereload
     script(src="http://localhost:35729/livereload.js")

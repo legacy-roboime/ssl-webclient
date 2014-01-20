@@ -15,7 +15,8 @@
     "protobuf": "",
     "long": "",
     "jszip": "Stuk/jszip",
-    "zlib.js": "imaya/zlib.js"
+    "zlib.js": "imaya/zlib.js",
+    "jscli": "vialink/jscli"
   },
   "exportsOverride": {
     "socket.io-client": {
@@ -53,6 +54,10 @@
     },
     "zlib.js": {
       "js": ["bin/*.js", "bin/*.map"]
+    },
+    "jscli": {
+      "js": "js/*.js",
+      "css": "css/*.css"
     }
   }
 }
