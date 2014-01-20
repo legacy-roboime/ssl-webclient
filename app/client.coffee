@@ -682,4 +682,5 @@ $ ->
     socket.emit "cmd_packet",
       cmd: split[0]
       args: split[1..]
-    return "<div><span>#{command}</span><br>" # '<span class="success">' + String(window.eval(input)) + '</span><br></div>'
+    # TODO: Print outputs
+    return "<div><span>#{command}</span><br>" # '<span class="success">'OK'</span><br></div>'
