@@ -57,16 +57,10 @@ io.sockets.on "connection", (socket) ->
 
   # TODO: Implement separation of sockets per game
   socket.on "vision_packet", (packet) ->
-    if debug
-      console.log packet
-
     # Forward packet to all the client sockets.
     io.sockets.emit "vision_packet", packet
 
   socket.on "refbox_packet", (packet) ->
-    if debug
-      console.log packet
-
     # Forward packet to all the client sockets.
     io.sockets.emit "refbox_packet", packet
 

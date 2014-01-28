@@ -21,6 +21,9 @@ self_tunnel: false
 # enable live reload? useful for development
 livereload: false
 
+# enable console? (for use with intel backend only)
+console: false
+
 # official ssl parameters
 # commonly used ports are listed respectively
 # to use them customize your development config

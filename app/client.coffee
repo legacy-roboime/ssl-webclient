@@ -670,7 +670,8 @@ socket.on "refbox_packet", (packet) ->
   updateRefereeState packet
 
 socket.on "cmd_packet", (packet) ->
-  jscli.print "<div<span>#{packet}</span></div>"
+  span_class = if packet.ok is true then "success" else if packet.ok is false then "fail" else ""
+  jscli.print "<span class=\"#{span_class}\">#{packet.out}</span>"
 
 $ ->
   $("[data-toggle='tooltip']").tooltip()
@@ -685,4 +686,3 @@ $ ->
     socket.emit "cmd_packet",
       cmd: split[0]
       args: split[1..]
-    return "<div><span>#{command}</span><br>" # '<span class="success">'OK'</span><br></div>'

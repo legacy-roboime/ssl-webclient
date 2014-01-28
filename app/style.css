@@ -87,6 +87,9 @@ text.robot-label {
   font-size: 14px;
   max-height: 86px;
 }
+output.jscli {
+  padding: 0;
+}
 input.jscli {
   line-height: 14px;
   outline: none;
@@ -94,4 +97,10 @@ input.jscli {
 .jscli-wrap {
   background: rgba(0, 0, 0, 0.50);
   width: 600px;
+}
+.jscli .success {
+  color: rgb(152, 243, 174);
+}
+.jscli .fail {
+  color: rgb(247, 170, 170);
 }

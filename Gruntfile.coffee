@@ -90,7 +90,7 @@ module.exports = (grunt) ->
         options:
           pretty: true
           data: ->
-            livereload: require("config").livereload
+            config: require("config")
         files:
           "public/index.html": "app/index.jade"
 

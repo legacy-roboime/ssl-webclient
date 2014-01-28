@@ -16,7 +16,7 @@
     "long": "",
     "jszip": "Stuk/jszip",
     "zlib.js": "imaya/zlib.js",
-    "jscli": "vialink/jscli"
+    "jscli": "vialink/jscli#v0.0.2"
   },
   "exportsOverride": {
     "socket.io-client": {

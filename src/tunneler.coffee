@@ -34,9 +34,9 @@ tunneler = (socket) ->
 
   vision_client.on "message", (message, remote) ->
     wrapper = Wrapper.decode(message)
-    if debug
-      console.log "received message from #{remote.address}:"
-      console.log wrapper
+    #if debug
+    #  console.log "received message from #{remote.address}:"
+    #  console.log wrapper
     socket.emit "vision_packet", wrapper
 
   vision_client.bind(vision.port)
@@ -51,9 +51,9 @@ tunneler = (socket) ->
 
   referee_client.on "message", (message, remote) ->
     wrapper = Referee.decode(message)
-    if debug
-      console.log "received message from #{remote.address}:"
-      console.log wrapper
+    #if debug
+    #  console.log "received message from #{remote.address}:"
+    #  console.log wrapper
     socket.emit "refbox_packet", wrapper
 
   referee_client.bind(referee.port)
