@@ -76,8 +76,8 @@ io.sockets.on "connection", (socket) ->
 
     # Forward packet to zmq
     zmq_publisher.send JSON.stringify(packet)
-  
-  zmq_subscriber.on "message", (packet) ->
-    if debug
-      console.log packet.toString()
-    io.sockets.emit "cmd_packet", packet.toString()
+
+zmq_subscriber.on "message", (packet) ->
+  if debug
+    console.log packet.toString()
+  io.sockets.emit "cmd_packet", JSON.parse(packet.toString())
