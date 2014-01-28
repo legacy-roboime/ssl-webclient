@@ -1,7 +1,7 @@
-ssl-webclient
-=============
+ssl-webclient-internal
+======================
 
-ssl-webclient is a multi-user supporting web-based application for streaming and viewing RoboCup Small Size League robot football games.
+ssl-webclient-internal is a multi-user supporting web-based application for controlling pyroboime (http://github.com/roboime/pyroboime) from a local browser.
 
 Getting Started
 ---------------
