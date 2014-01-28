@@ -59,6 +59,9 @@ text.robot-label {
   /*.attr("text-anchor", "middle")
   .attr("alignment-baseline", "central")*/
 }
+text.robot-label:hover {
+  cursor: default;
+}
 .yellow {
   fill: #ff0;
 }
