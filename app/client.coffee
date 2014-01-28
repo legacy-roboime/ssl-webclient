@@ -669,6 +669,9 @@ socket.on "vision_packet", (packet) ->
 socket.on "refbox_packet", (packet) ->
   updateRefereeState packet
 
+socket.on "cmd_packet", (packet) ->
+  jscli.print "<div<span>#{packet}</span></div>"
+
 $ ->
   $("[data-toggle='tooltip']").tooltip()
   field = $("#field")[0]
@@ -682,5 +685,4 @@ $ ->
     socket.emit "cmd_packet",
       cmd: split[0]
       args: split[1..]
-    # TODO: Print outputs
     return "<div><span>#{command}</span><br>" # '<span class="success">'OK'</span><br></div>'

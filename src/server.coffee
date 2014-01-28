@@ -23,10 +23,10 @@ config = require("config")
 
 zmq_subscriber = zmq.socket("pull")
 zmq_publisher = zmq.socket("push")
-zmq_publisher.bind "tcp://" + zmq_conf.address + ":" + zmq_conf.push_port
-zmq_subscriber.bind "tcp://" + zmq_conf.address + ":" + zmq_conf.pull_port
-console.log "publishing to tcp://" + zmq_conf.address + ":" + zmq_conf.push_port
-console.log "subscribing to tcp://" + zmq_conf.address + ":" + zmq_conf.pull_port
+zmq_publisher.bindSync "tcp://*:" + zmq_conf.push_port
+zmq_subscriber.connect "tcp://" + zmq_conf.address + ":" + zmq_conf.pull_port
+console.log "Publishing to tcp://" + zmq_conf.address + ":" + zmq_conf.push_port
+console.log "Subscribing to tcp://" + zmq_conf.address + ":" + zmq_conf.pull_port
 
 app = express()
 app.get '/*', (req, res, next) ->
@@ -75,4 +75,9 @@ io.sockets.on "connection", (socket) ->
       console.log packet
 
     # Forward packet to zmq
-    zmq_publisher.send(packet)
+    zmq_publisher.send JSON.stringify(packet)
+  
+  zmq_subscriber.on "message", (packet) ->
+    if debug
+      console.log packet.toString()
+    io.sockets.emit "cmd_packet", packet.toString()
