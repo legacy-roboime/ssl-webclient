@@ -92,6 +92,7 @@ text.robot-label:hover {
 }
 output.jscli {
   padding: 0;
+  max-height: 126px;
 }
 input.jscli {
   line-height: 14px;
