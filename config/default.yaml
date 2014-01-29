@@ -7,10 +7,9 @@ tunnel_to:
   address: "ssl-webclient.roboime.com"
   port: 8888
 
-zmq_conf:
-  address: "0.0.0.0"
-  push_port: 66654
-  pull_port: 66655
+zmq:
+  sub: "tcp://127.0.0.1:6665"
+  push: "tcp://127.0.0.1:6664"
 
 # by default debugging is off
 debug: false
