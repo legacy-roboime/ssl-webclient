@@ -19,14 +19,15 @@ zmq = require("zmq")
 
 {join} = require("path")
 config = require("config")
-{http, debug, zmq_conf} = config
+{http, debug} = config
 
-zmq_subscriber = zmq.socket("pull")
-zmq_publisher = zmq.socket("push")
-zmq_publisher.bindSync "tcp://*:" + zmq_conf.push_port
-zmq_subscriber.connect "tcp://" + zmq_conf.address + ":" + zmq_conf.pull_port
-console.log "Publishing to tcp://" + zmq_conf.address + ":" + zmq_conf.push_port
-console.log "Subscribing to tcp://" + zmq_conf.address + ":" + zmq_conf.pull_port
+zmq_subscriber = zmq.socket("sub")
+zmq_pusher = zmq.socket("push")
+zmq_subscriber.connect config.zmq.sub
+zmq_subscriber.subscribe ""
+zmq_pusher.bind config.zmq.push
+console.log "cli subcribed to #{config.zmq.sub}"
+console.log "cli pushing to #{config.zmq.push}"
 
 app = express()
 app.get '/*', (req, res, next) ->
@@ -69,7 +70,7 @@ io.sockets.on "connection", (socket) ->
       console.log packet
 
     # Forward packet to zmq
-    zmq_publisher.send JSON.stringify(packet)
+    zmq_pusher.send JSON.stringify(packet)
 
 zmq_subscriber.on "message", (packet) ->
   if debug

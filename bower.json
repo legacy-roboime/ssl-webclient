@@ -7,7 +7,7 @@
   "dependencies": {
     "socket.io-client": "~0.9.16",
     "jquery": ">=1.9.0",
-    "d3": "~3.3.5",
+    "d3": "~3.4.1",
     "bootstrap": ">=3.0.2",
     "font-awesome": "~4.0",
     "screenfull": "~1.1",
