@@ -74,4 +74,7 @@ io.sockets.on "connection", (socket) ->
 zmq_subscriber.on "message", (packet) ->
   if debug
     console.log packet.toString()
-  io.sockets.emit "cmd_packet", JSON.parse(packet.toString())
+  try
+    io.sockets.emit "cmd_packet", JSON.parse((packet || "").toString())
+  catch e
+    console.log e
