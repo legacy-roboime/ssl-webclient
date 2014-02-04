@@ -25,7 +25,7 @@ zmq_subscriber = zmq.socket("sub")
 zmq_pusher = zmq.socket("push")
 zmq_subscriber.connect config.zmq.sub
 zmq_subscriber.subscribe ""
-zmq_pusher.bind config.zmq.push
+zmq_pusher.connect config.zmq.push
 console.log "cli subcribed to #{config.zmq.sub}"
 console.log "cli pushing to #{config.zmq.push}"
 
