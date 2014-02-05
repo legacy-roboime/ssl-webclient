@@ -13,15 +13,10 @@ GNU Affero General Public License for more details.
 ###
 
 dgram = require("dgram")
-protobuf = require("protobufjs")
+{Vision, Referee} = require("./ssl-messages")
 {tunnel_to, vision, debug, referee} = require("config")
 
 io = require("socket.io-client")
-builder = protobuf.protoFromFile("src/protos/messages_robocup_ssl_wrapper.proto")
-ref_builder = protobuf.protoFromFile("src/protos/referee.proto")
-
-Wrapper = builder.build("SSL_WrapperPacket")
-Referee = ref_builder.build("SSL_Referee")
 
 tunneler = (socket) ->
   vision_client = dgram.createSocket("udp4")
@@ -33,7 +28,7 @@ tunneler = (socket) ->
     console.log "Listening for vision on #{vision.address}:#{vision.port} ..."
 
   vision_client.on "message", (message, remote) ->
-    wrapper = Wrapper.decode(message)
+    wrapper = Vision.decode(message)
     #if debug
     #  console.log "received message from #{remote.address}:"
     #  console.log wrapper
