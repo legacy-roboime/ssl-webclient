@@ -5,29 +5,11 @@
       "**/.*"
   ],
   "dependencies": {
-    "socket.io-client": "~0.9.16",
-    "jquery": ">=1.9.0",
-    "d3": "~3.4.1",
     "bootstrap": ">=3.0.2",
     "font-awesome": "~4.0",
-    "screenfull": "~1.1",
-    "bytebuffer": "",
-    "protobuf": "",
-    "long": "",
-    "jszip": "Stuk/jszip",
-    "zlib.js": "imaya/zlib.js",
     "jscli": "vialink/jscli#v0.0.2"
   },
   "exportsOverride": {
-    "socket.io-client": {
-      "js": "dist/*"
-    },
-    "jquery": {
-      "js": "jquery.*"
-    },
-    "d3": {
-      "js": ["*.js", "*.map"]
-    },
     "bootstrap": {
       "js": "dist/js/*",
       "css": "dist/css/*",
@@ -36,24 +18,6 @@
     "font-awesome": {
       "css": "css/*",
       "fonts": "fonts/*"
-    },
-    "screenfull": {
-      "js": "dist/*.js"
-    },
-    "bytebuffer": {
-      "js": ["*.js", "*.map"]
-    },
-    "protobuf": {
-      "js": ["*.js", "*.map"]
-    },
-    "long": {
-      "js": ["*.js", "*.map"]
-    },
-    "jszip": {
-      "js": "jszip*.js"
-    },
-    "zlib.js": {
-      "js": ["bin/*.js", "bin/*.map"]
     },
     "jscli": {
       "js": "js/*.js",

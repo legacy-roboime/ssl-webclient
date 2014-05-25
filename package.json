@@ -20,12 +20,20 @@
   "dependencies": {
     "coffee-script": "~1.6.1",
     "socket.io": "~0.9.16",
-    "socket.io-client": "~0.9.16",
+    "socket.io-client": "~0.9.17",
     "express": "~3.4.0",
     "protobufjs": "~1.1.6",
     "config": "~0.4.30",
     "yaml": "~0.2.3",
-    "zmq": "~2.5.1"
+    "zmq": "~2.5.1",
+    "long": "~1.1.2",
+    "jszip": "~2.2.2",
+    "screenfull": "~1.2.1",
+    "jquery": "~2.1.1",
+    "bytebuffer": "~2.3.1",
+    "protobuf": "~0.8.8",
+    "d3": "~3.4.8",
+    "pako": "~0.2.1"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
@@ -34,8 +42,9 @@
     "grunt-contrib-watch": "~0.5.1",
     "grunt-develop": "~0.2.2",
     "grunt-bower-task": "=0.3.2",
-    "grunt-contrib-coffee": "~0.7.0",
-    "grunt-contrib-jade": "~0.8.0"
+    "grunt-contrib-jade": "~0.8.0",
+    "grunt-browserify": "~2.1.0",
+    "coffeeify": "~0.6.0"
   },
   "engines": {
     "node": ">= 0.10.0"
