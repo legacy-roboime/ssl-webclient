@@ -12,18 +12,14 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 ###
 
-join = require("path").join
-
 module.exports = (grunt) ->
-  grunt.loadNpmTasks "grunt-contrib-copy"
-  grunt.loadNpmTasks "grunt-contrib-clean"
-  grunt.loadNpmTasks "grunt-contrib-watch"
-  grunt.loadNpmTasks "grunt-develop"
-  grunt.loadNpmTasks "grunt-bower-task"
-  grunt.loadNpmTasks "grunt-contrib-coffee"
-  grunt.loadNpmTasks "grunt-contrib-jade"
 
+  # Project configuration.
   grunt.initConfig
+
+    # Metadata.
+    pkg: grunt.file.readJSON("package.json")
+
     clean: ["public"]
 
     develop:
@@ -62,12 +58,21 @@ module.exports = (grunt) ->
           cleanTargetDir: true
           cleanBowerDir: false
 
-    coffee:
-      app:
-        files:
-          "public/client.js": "app/**/*.coffee"
-        options:
-          sourceMap: true
+    browserify:
+      client:
+        src: "app/client.coffee"
+        dest: "public/client.js"
+
+      options:
+        transform: [
+          "coffeeify"
+          #"brfs"
+          #"workerify"
+        ]
+        extension: ".coffee"
+        ignoreGlobals: true
+        bundleOptions:
+          debug: true
 
     copy:
       app_src:
@@ -94,9 +99,17 @@ module.exports = (grunt) ->
         files:
           "public/index.html": "app/index.jade"
 
+  # These plugins provide necessary tasks.
+  grunt.loadNpmTasks "grunt-contrib-copy"
+  grunt.loadNpmTasks "grunt-contrib-clean"
+  grunt.loadNpmTasks "grunt-contrib-watch"
+  grunt.loadNpmTasks "grunt-develop"
+  grunt.loadNpmTasks "grunt-bower-task"
+  grunt.loadNpmTasks "grunt-browserify"
+  grunt.loadNpmTasks "grunt-contrib-jade"
 
   # Default task is compiling
-  grunt.registerTask "app", ["coffee", "jade", "copy"]
+  grunt.registerTask "app", ["browserify", "jade", "copy"]
   grunt.registerTask "default", ["bower", "app"]
   grunt.registerTask "run", ["default", "develop:server", "watch"]
   grunt.registerTask "tunneler", ["develop:tunneler", "watch:tunneler"]

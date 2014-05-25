@@ -11,6 +11,17 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 ###
+$ = require("jquery")
+d3 = require("d3")
+screenfull = require("screenfull")
+io = require("socket.io-client")
+ProtoBuf = require("protobufjs")
+Long = require("long")
+JSZip = require("jszip")
+pako = require("pako")
+
+# expose jquery so bootstrap doesn't go nuts
+window.jQuery = $
 
 inner_width = 7200
 inner_height = 5200
@@ -371,18 +382,30 @@ drawField(default_geometry_field)
 # log playing stuff
 
 # XXX: why do we need this? bug??
-window.ProtoBuf = dcodeIO.ProtoBuf
+#window.ProtoBuf = dcodeIO.ProtoBuf
 
 class LogParser
 
   header = "SSL_LOG_FILE"
-  vision_builder = dcodeIO.ProtoBuf.protoFromFile("protos/messages_robocup_ssl_wrapper.proto").build("SSL_WrapperPacket")
-  refbox_builder = dcodeIO.ProtoBuf.protoFromFile("protos/referee.proto").build("SSL_Referee")
+  vision_builder = ProtoBuf.protoFromFile("protos/messages_robocup_ssl_wrapper.proto").build("SSL_WrapperPacket")
+  refbox_builder = ProtoBuf.protoFromFile("protos/referee.proto").build("SSL_Referee")
 
-  constructor: (@buffer, @progress_step=10000) ->
+  constructor: (file, @progress_step=10000) ->
+
+    # try at most to use an ArrayBuffer
+    if file.byteLength
+      @buffer = file.buffer or file
+    else if file.length
+      console.warn("Passed a plain array to LogParser, you should prefer passing an ArrayBuffer.")
+      @buffer = new ArrayBuffer(file.length)
+      view = new Uint8Array(@buffer)
+      for i in [0...file.length]
+        view[i] = file[i]
+
+    @dataview = new DataView(@buffer)
+
     # SSL_LOG_FILE + version (uint32)
     @offset = header.length + 4
-    @dataview = new DataView(@buffer)
     @last_progress = 0
     # rough approximation if used without caching
     @max_offset = @buffer.byteLength
@@ -403,7 +426,7 @@ class LogParser
   parse_packet: ->
     # TODO: worry about endianess
     offset = @offset
-    timestamp = new Date(dcodeIO.Long.fromBits(@dataview.getUint32(@offset + 4), @dataview.getUint32(@offset)).toNumber() / 1000 / 1000)
+    timestamp = new Date(Long.fromBits(@dataview.getUint32(@offset + 4), @dataview.getUint32(@offset)).toNumber() / 1000 / 1000)
     type = @dataview.getUint32(@offset + 8)
     size = @dataview.getUint32(@offset + 12)
     switch type
@@ -484,7 +507,7 @@ class LogParser
     @offsets = []
     until @offset >= @buffer.byteLength
       offset = @offset
-      timestamp = new Date(dcodeIO.Long.fromBits(@dataview.getUint32(@offset + 4), @dataview.getUint32(@offset)).toNumber() / 1000 / 1000)
+      timestamp = new Date(Long.fromBits(@dataview.getUint32(@offset + 4), @dataview.getUint32(@offset)).toNumber() / 1000 / 1000)
       size = @dataview.getUint32(@offset + 12)
       @offset += 16 + size
       packet =
@@ -593,16 +616,21 @@ load_file = (file) ->
   #      class with gui stuff
   try
     log_parser = new LogParser(file)
-  catch e
+  catch e1
     # it didn't work, let's try gunzipping
     try
-      unzip = new Zlib.Gunzip(new Uint8Array(file))
-      log_parser = new LogParser(unzip.decompress().buffer)
-    catch
+      out = pako.inflate(new Uint8Array(file))
+      log_parser = new LogParser(out)
+      #unzip = new zlib.Gunzip(new Uint8Array(file))
+      #log_parser = new LogParser(unzip.decompress().buffer)
+    catch e2
       # that didn't work either, what about unzipping?
-      zip = new JSZip(file)
-      # XXX: getting the first file that ends with .log
-      log_parser = new LogParser(zip.file(/.*\.log$/)[0].asArrayBuffer())
+      try
+        zip = new JSZip(file)
+        # XXX: getting the first file that ends with .log
+        log_parser = new LogParser(zip.file(/.*\.log$/)[0].asArrayBuffer())
+      catch e3
+        console.log("could not open log file, one if these is the cause:\n  #{e1}\n  #{e2}\n  #{e3}")
 
   # DEBUG:
   window.log_parser = log_parser
@@ -612,7 +640,8 @@ load_file = (file) ->
   t1 = new Date()
 
   # async call to allow drawing to occur
-  setTimeout ->
+  #setTimeout ->
+  requestAnimationFrame ->
     log_parser.cache_offsets cacheOffsetCallback, ->
       t2 = new Date()
       console.log("cached #{log_parser.offsets.length} offsets in #{t2 - t1}ms")
