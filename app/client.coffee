@@ -225,7 +225,7 @@ drawField = (field_geometry, is_blue_left=true) ->
     .attr("y", (f) -> -f.field_width / 2 + sp)
 
 # in miliseconds
-max_screen_time = 30
+max_screen_time = 100
 
 drawRobots = (robots, color, timestamp) ->
   timestampify(robots, timestamp)
