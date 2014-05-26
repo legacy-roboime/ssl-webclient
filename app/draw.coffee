@@ -13,6 +13,8 @@ GNU Affero General Public License for more details.
 ###
 
 d3 = require("d3")
+numeral = require("numeral")
+$ = require("jquery")
 
 inner_width = 7500
 inner_height = 5500
@@ -254,21 +256,38 @@ drawField = (field_geometry, is_blue_left=true) ->
 # in miliseconds
 max_screen_time = 100
 
+# robot hover tooltip
+numFormat = "0"
+showTip = (text) ->
+  $(".tip").html(text).show()
+hideTip = ->
+  $(".tip").hide()
+
 drawRobots = (robots, color, timestamp) ->
   timestampify(robots, timestamp)
 
   robot = svg.selectAll(".robot.#{color}").data(robots, (d) -> d.robot_id)
-
-  robot
+  robot.select("path")
     .attr("d", robot_path)
     .attr("transform", robot_transform)
+  robot.select("text")
+    .text(robot_label)
+    .attr("x", (r) -> r.x)
+    .attr("y", (r) -> -r.y)
 
-  robot.enter()
-    .append("path")
+  g = robot.enter()
+    .append("g")
     .classed("robot", true)
     .classed(color, true)
+    .on("mouseover", (d) -> showTip("#{color} #{d.robot_id} (#{numeral(d.x).format(numFormat)},#{numeral(d.y).format(numFormat)})"))
+    .on("mouseout", -> hideTip())
+  g.append("path")
     .attr("d", robot_path)
     .attr("transform", robot_transform)
+  g.append("text")
+    .text(robot_label)
+    .attr("x", (r) -> r.x)
+    .attr("y", (r) -> -r.y)
 
   robot.exit()
     .filter (d) ->
@@ -277,27 +296,6 @@ drawRobots = (robots, color, timestamp) ->
       not d.timestamp? or timestamp - d.timestamp > max_screen_time or d.timestamp > timestamp
     .remove()
 
-  label = svg.selectAll(".robot-label.#{color}").data(robots, (d) -> d.robot_id)
-
-  label
-    .text(robot_label)
-    .attr("x", (r) -> r.x)
-    .attr("y", (r) -> -r.y)
-
-  label.enter()
-    .append("text")
-    .classed("robot-label", true)
-    .classed(color, true)
-    .text(robot_label)
-    .attr("x", (r) -> r.x)
-    .attr("y", (r) -> -r.y)
-
-  label.exit()
-    .filter (d) ->
-      # delete if either it doesn't have a timestamp, its screen time has expired
-      # or its timestamp is at the future
-      not d.timestamp? or timestamp - d.timestamp > max_screen_time or d.timestamp > timestamp
-    .remove()
 
 drawBalls = (balls, timestamp) ->
   timestampify(balls, timestamp)
@@ -316,6 +314,8 @@ drawBalls = (balls, timestamp) ->
     .attr("r", ball_radius)
     .attr("cx", (b) -> b.x)
     .attr("cy", (b) -> -b.y)
+    .on("mouseover", (d) -> showTip("ball (#{numeral(d.x).format(numFormat)},#{numeral(d.y).format(numFormat)})"))
+    .on("mouseout", -> hideTip())
 
   ball.exit()
     .filter (d) ->
@@ -356,6 +356,7 @@ pad = (n, width, z) ->
   if n.length >= width then n else new Array(width - n.length + 1).join(z) + n
 
 # Time voodoo: converting ticks to minutes:seconds
+#XXX: tried to use moment.js without success
 ticks_to_time = (ticks) ->
   #TODO: time may be negative, ought to represent that
   if ticks?
@@ -363,7 +364,6 @@ ticks_to_time = (ticks) ->
     if ticks > 0 then time else "-#{time}"
   else
     "--:--"
-
 
 # initialize the field
 svg.append("g").classed("grid", true)
@@ -383,8 +383,43 @@ svg.append("text").classed("team-name", true)
 # draw default sized field
 drawField(default_geometry_field)
 
-module.exports =
-  field: drawField
-  robots: drawRobots
-  balls: drawBalls
-  referee: drawReferee
+class Painter
+  constructor: (@is_blue_left=false) ->
+    @detection = null
+    @drawDetection = false
+    @geometry = null
+    @drawGeometry = false
+    @referee = null
+    @drawReferee = false
+    @timestamp = null
+    @_draw()
+
+  _draw: ->
+    if @drawField
+      @drawField = false
+      drawField @geometry.field
+    if @drawReferee
+      @drawReferee = false
+      drawReferee @referee, @is_blue_left
+    if @drawDetection
+      @drawDetection = false
+      drawRobots @detection.robots_yellow, "yellow", @timestamp
+      drawRobots @detection.robots_blue, "blue", @timestamp
+      drawBalls  @detection.balls, @timestamp
+    requestAnimationFrame => @_draw()
+
+  updateVision: (packet, @timestamp=new Date()) ->
+
+    if packet.detection
+      @detection = packet.detection
+      @drawDetection = true
+
+    if packet.geometry
+      @geometry = packet.geometry
+      @drawField = true
+
+  updateReferee: (@referee, @timestamp=new Date()) ->
+    @drawReferee = true
+
+
+exports.Painter = Painter

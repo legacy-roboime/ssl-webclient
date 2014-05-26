@@ -123,11 +123,15 @@ class LogPlayer
 
   play: ->
     @playing = true
-    @_play(@cb, @done)
+    @_tick(@cb, @done)
 
-  _play: (cb, done) ->
-    # XXX: notice we're skipping the first packet
-    if @offset < @buffer.byteLength - 1 and @playing
+  _tick: (cb, done) ->
+    unless @previous
+      @_next = setTimeout (=> @_tick(cb)), 1 / 120
+      @previous = @parse_packet()
+      cb.call(this, @previous)
+
+    else if @offset < @buffer.byteLength - 1 and @playing
       @previous = @previous || @parse_packet()
       @current = @parse_packet()
       # this block has to run as fast as possible
@@ -136,10 +140,11 @@ class LogPlayer
       delta = (@current.timestamp - @previous.timestamp) - (@now - @before)
       if delta < 0
         delta = 0
-      @_next = setTimeout (=> @_play(cb)), delta
+      @_next = setTimeout (=> @_tick(cb)), delta
       # until here
       @previous = @current
       cb.call(this, @current)
+
     else
       @done.call(this)
       console.log("stopped")

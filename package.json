@@ -33,7 +33,8 @@
     "bytebuffer": "~2.3.1",
     "protobuf": "~0.8.8",
     "d3": "~3.4.8",
-    "pako": "~0.2.1"
+    "pako": "~0.2.1",
+    "numeral": "~1.5.3"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

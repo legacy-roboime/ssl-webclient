@@ -17,29 +17,14 @@ screenfull = require("screenfull")
 io = require("socket.io-client")
 JSZip = require("jszip")
 pako = require("pako")
-utils = require("./utils")
-draw = require("./draw")
+{Painter} = require("./draw")
 {LogPlayer} = require("./logplayer")
-
 
 # expose jquery so bootstrap doesn't go nuts
 window.jQuery = $
 
-updateRefereeState = (referee, is_blue_left=true) ->
+painter = new Painter()
 
-  if referee?
-    draw.referee referee, is_blue_left
-
-updateVisionState = (vision, timestamp=new Date()) ->
-  {detection, geometry} = vision
-
-  if detection?
-    draw.robots detection.robots_yellow, "yellow", timestamp
-    draw.robots detection.robots_blue, "blue", timestamp
-    draw.balls  detection.balls, timestamp
-
-  if geometry?
-    draw.field geometry.field
 
 # helper for createing throttled get/set functions
 # (good to create time/volume-slider, which are used as getter and setter)
@@ -76,6 +61,7 @@ slider_handler = new GetSetHandler(->
 
 player_slider.bind "input", -> slider_handler.set()
 
+shouldRender = false
 playCallback = (p) ->
   #console.log("render")
 
@@ -84,11 +70,13 @@ playCallback = (p) ->
 
   switch p.type
     when 2
-      updateVisionState p.packet, p.timestamp
+      painter.updateVision p.packet, p.timestamp
     when 3
-      updateRefereeState p.packet, p.timestamp
+      painter.updateReferee p.packet, p.timestamp
     else
       console.log p
+
+  shouldRender = true
 
 
 $(".play-btn").on "click", (e) ->
@@ -209,10 +197,10 @@ $("#file-input").on "change", (e) ->
 socket = io.connect()
 
 socket.on "vision_packet", (packet) ->
-  updateVisionState packet
+  painter.updateVision packet
 
 socket.on "refbox_packet", (packet) ->
-  updateRefereeState packet
+  painter.updateReferee packet
 
 socket.on "cmd_packet", (packet) ->
   span_class = if packet.ok is true then "success" else if packet.ok is false then "fail" else ""
@@ -220,11 +208,10 @@ socket.on "cmd_packet", (packet) ->
 
 $ ->
   $("[data-toggle='tooltip']").tooltip()
-  field = $("#field")[0]
 
   $(".fullscreen-btn").click ->
     if screenfull.enabled
-      screenfull.toggle(field)
+      screenfull.toggle()
 
   jscli.eval = (command) ->
     split = command.split(' ')
