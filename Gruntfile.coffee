@@ -41,9 +41,22 @@ module.exports = (grunt) ->
         files: ["src/tunneler.coffee", "src/proto/**"]
         task: ["develop:tunneler"]
 
-      app:
-        files: ["app/**/*"]
-        tasks: ["app"]
+      appStyle:
+        files: ["app/**/*.styl"]
+        tasks: ["stylus"]
+        options:
+          livereload: true
+
+      appHtml:
+        files: ["app/**/*.jade"]
+        tasks: ["jade"]
+        options:
+          livereload: true
+
+      appScript:
+        #files: ["app/**/*.coffee"]
+        #tasks: ["browserify"]
+        files: ["public/*.js"]
         options:
           livereload: true
 
@@ -69,20 +82,17 @@ module.exports = (grunt) ->
           #"brfs"
           #"workerify"
         ]
-        extension: ".coffee"
-        ignoreGlobals: true
+        watch: true
         bundleOptions:
           debug: true
+        browserifyOptions:
+          extensions: [".coffee"]
+          ignoreGlobals: true
 
     copy:
       app_src:
         expand: true
         src: "app/**/*.coffee"
-        dest: "public/"
-      app_css:
-        expand: true
-        cwd: "app/"
-        src: "**/*.css"
         dest: "public/"
       src_protos:
         expand: true
@@ -99,6 +109,13 @@ module.exports = (grunt) ->
         files:
           "public/index.html": "app/index.jade"
 
+    stylus:
+      compile:
+        options:
+          linenos: true
+        files:
+          "public/style.css": "app/style.styl"
+
   # These plugins provide necessary tasks.
   grunt.loadNpmTasks "grunt-contrib-copy"
   grunt.loadNpmTasks "grunt-contrib-clean"
@@ -107,9 +124,10 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks "grunt-bower-task"
   grunt.loadNpmTasks "grunt-browserify"
   grunt.loadNpmTasks "grunt-contrib-jade"
+  grunt.loadNpmTasks "grunt-contrib-stylus"
 
   # Default task is compiling
-  grunt.registerTask "app", ["browserify", "jade", "copy"]
+  grunt.registerTask "app", ["browserify", "jade", "stylus", "copy"]
   grunt.registerTask "default", ["bower", "app"]
   grunt.registerTask "run", ["default", "develop:server", "watch"]
   grunt.registerTask "tunneler", ["develop:tunneler", "watch:tunneler"]

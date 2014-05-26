@@ -44,7 +44,8 @@
     "grunt-bower-task": "=0.3.2",
     "grunt-contrib-jade": "~0.8.0",
     "grunt-browserify": "~2.1.0",
-    "coffeeify": "~0.6.0"
+    "coffeeify": "~0.6.0",
+    "grunt-contrib-stylus": "~0.16.0"
   },
   "engines": {
     "node": ">= 0.10.0"
