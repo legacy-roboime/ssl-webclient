@@ -213,6 +213,11 @@ $ ->
     if screenfull.enabled
       screenfull.toggle()
 
+  $(window).keydown (e) ->
+    if (e.which == 121 or e.which == 122) and screenfull.enabled
+      screenfull.toggle()
+      e.preventDefault()
+
   jscli.eval = (command) ->
     split = command.split(' ')
     socket.emit "cmd_packet",

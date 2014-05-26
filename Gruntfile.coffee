@@ -99,6 +99,11 @@ module.exports = (grunt) ->
         cwd: "src/protos/"
         src: "*.proto"
         dest: "public/protos/"
+      assets:
+        expand: true
+        cwd: "assets/"
+        src: "**/*"
+        dest: "public/"
 
     jade:
       app:

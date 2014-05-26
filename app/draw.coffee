@@ -258,10 +258,19 @@ max_screen_time = 100
 
 # robot hover tooltip
 numFormat = "0"
+tipBusy = false
 showTip = (text) ->
-  $(".tip").html(text).show()
-hideTip = ->
-  $(".tip").hide()
+  tipBusy = true
+  $(".tip").html(text)
+
+persistentText = ""
+restTip = ->
+  tipBusy = false
+  $(".tip").html(persistentText)
+
+persistTip = (text) ->
+  persistentText = text
+  $(".tip").html(text) unless tipBusy
 
 drawRobots = (robots, color, timestamp) ->
   timestampify(robots, timestamp)
@@ -280,7 +289,7 @@ drawRobots = (robots, color, timestamp) ->
     .classed("robot", true)
     .classed(color, true)
     .on("mouseover", (d) -> showTip("#{color} #{d.robot_id} (#{numeral(d.x).format(numFormat)},#{numeral(d.y).format(numFormat)})"))
-    .on("mouseout", -> hideTip())
+    .on("mouseout", -> restTip())
   g.append("path")
     .attr("d", robot_path)
     .attr("transform", robot_transform)
@@ -303,7 +312,6 @@ drawBalls = (balls, timestamp) ->
   ball = svg.selectAll(".ball")
     .data(balls)
 
-
   ball
     .attr("cx", (b) -> b.x)
     .attr("cy", (b) -> -b.y)
@@ -315,7 +323,7 @@ drawBalls = (balls, timestamp) ->
     .attr("cx", (b) -> b.x)
     .attr("cy", (b) -> -b.y)
     .on("mouseover", (d) -> showTip("ball (#{numeral(d.x).format(numFormat)},#{numeral(d.y).format(numFormat)})"))
-    .on("mouseout", -> hideTip())
+    .on("mouseout", -> restTip())
 
   ball.exit()
     .filter (d) ->
@@ -337,6 +345,9 @@ drawReferee = (referee, is_blue_left) ->
   svg.select(".right-name").datum(right)
     .text((d) -> d.name)
 
+  persistTip("#{stg2txt(referee.stage)}: #{cmd2txt(referee.command)}")
+  window.referee = referee
+
   #yellow_team = d3.select("#team_yellow").datum(referee.yellow)
   #yellow_team.select(".team_name").html((d) -> d.name)
   #yellow_team.select(".score").html((d) -> d.score)
@@ -344,6 +355,82 @@ drawReferee = (referee, is_blue_left) ->
   #blue_team = d3.select("#team_blue").datum(referee.blue)
   #blue_team.select(".team_name").html((d) -> d.name)
   #blue_team.select(".score").html((d) -> d.score)
+
+cmd2txt = (c) ->
+  switch c
+    # All robots should completely stop moving.
+    when 0 then "halt"
+    # Robots must keep 50 cm from the ball.
+    when 1 then "stop"
+    # A prepared kickoff or penalty may now be taken.
+    when 2 then "start"
+    # The ball is dropped and free for either team.
+    when 3 then "force start"
+    # The yellow team may move into kickoff position.
+    when 4 then "prepare kickoff yellow"
+    # The blue team may move into kickoff position.
+    when 5 then "prepare kickoff blue"
+    # The yellow team may move into penalty position.
+    when 6 then "prepare penalty yellow"
+    # The blue team may move into penalty position.
+    when 7 then "prepare penalty blue"
+    # The yellow team may take a direct free kick.
+    when 8 then "direct free yellow"
+    # The blue team may take a direct free kick.
+    when 9 then "direct free blue"
+    # The yellow team may take an indirect free kick.
+    when 10 then "indirect free yellow"
+    # The blue team may take an indirect free kick.
+    when 11 then "indirect free blue"
+    # The yellow team is currently in a timeout.
+    when 12 then "timeout yellow"
+    # The blue team is currently in a timeout.
+    when 13 then "timeout blue"
+    # The yellow team just scored a goal.
+    # For information only.
+    # For rules compliance, teams must treat as STOP.
+    when 14 then "goal yellow"
+    # The blue team just scored a goal.
+    when 15 then "goal blue"
+
+stg2txt = (s) ->
+  switch s
+    # The first half is about to start.
+    # A kickoff is called within this stage.
+    # This stage ends with the NORMAL_START.
+    when 0 then "pre game"
+    # The first half of the normal game, before half time.
+    when 1 then "first half"
+    # Half time between first and second halves.
+    when 2 then "half time"
+    # The second half is about to start.
+    # A kickoff is called within this stage.
+    # This stage ends with the NORMAL_START.
+    when 3 then "pre second half"
+    # The second half of the normal game, after half time.
+    when 4 then "second half"
+    # The break before extra time.
+    when 5 then "extra time break"
+    # The first half of extra time is about to start.
+    # A kickoff is called within this stage.
+    # This stage ends with the NORMAL_START.
+    when 6 then "pre extra first half"
+    # The first half of extra time.
+    when 7 then "extra first half"
+    # Half time between first and second extra halves.
+    when 8 then "extra half time"
+    # The second half of extra time is about to start.
+    # A kickoff is called within this stage.
+    # This stage ends with the NORMAL_START.
+    when 9 then "pre extra second half"
+    # The second half of extra time.
+    when 10 then "extra second half"
+    # The break before penalty shootout.
+    when 11 then "penalty shootout break"
+    # The penalty shootout.
+    when 12 then "penalty shootout"
+    # The game is over.
+    when 13 then "post game"
 
 timestampify = (data, timestamp) ->
   data.map (d) ->
@@ -360,7 +447,7 @@ pad = (n, width, z) ->
 ticks_to_time = (ticks) ->
   #TODO: time may be negative, ought to represent that
   if ticks?
-    time = "#{~~(Math.abs(ticks) / (60 * 1000000))}:#{pad(Math.abs(~~(ticks / 1000000)) % 60, 2)}"
+    time = "#{pad(~~(Math.abs(ticks) / (60 * 1000000)), 2, " ")}:#{pad(Math.abs(~~(ticks / 1000000)) % 60, 2)}"
     if ticks > 0 then time else "-#{time}"
   else
     "--:--"
