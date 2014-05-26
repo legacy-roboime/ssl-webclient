@@ -173,6 +173,8 @@ ball_radius = 21.5
 robot_label = (r) ->
   r.robot_id
 
+transitionDuration = 750
+
 drawField = (field_geometry, is_blue_left=true) ->
 
   # spacing between lines
@@ -222,36 +224,42 @@ drawField = (field_geometry, is_blue_left=true) ->
 
   f.select(".field-line")
     .transition()
-    .duration(750)
+    .duration(transitionDuration)
     .attr("d", field_path)
 
   f.select(".left-goal")
     .classed("blue", is_blue_left)
     .classed("yellow", not is_blue_left)
     .transition()
-    .duration(750)
+    .duration(transitionDuration)
     .attr("d", left_goal_path)
 
   f.select(".right-goal")
     .classed("blue", not is_blue_left)
     .classed("yellow", is_blue_left)
     .transition()
-    .duration(750)
+    .duration(transitionDuration)
     .attr("d", right_goal_path)
 
   sp = 25
 
   f.select(".time-left")
-    .attr("x", 0)
+    .transition()
+    .duration(transitionDuration)
+    .attr("x", 2)
     .attr("y", (f) -> -f.field_width / 2 - sp)
 
   f.select(".left-name")
+    .transition()
+    .duration(transitionDuration)
     .attr("x", (f) -> -f.field_length / 2 + sp)
-    .attr("y", (f) -> -f.field_width / 2 + sp)
+    .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
 
   f.select(".right-name")
+    .transition()
+    .duration(transitionDuration)
     .attr("x", (f) -> f.field_length / 2 - sp)
-    .attr("y", (f) -> -f.field_width / 2 + sp)
+    .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
 
 # in miliseconds
 max_screen_time = 100
@@ -332,18 +340,25 @@ drawBalls = (balls, timestamp) ->
       not d.timestamp? or timestamp - d.timestamp > max_screen_time or d.timestamp > timestamp
     .remove()
 
+hPxPerLetter = 156
+vPxPerLetter = 250
+hPxPerLetterSm = 93
+
 drawReferee = (referee, is_blue_left) ->
   #d3.select("#time_left").datum(referee).html((d) -> ticks_to_time(d.stage_time_left))
   svg.select(".time-left").datum(referee.stage_time_left)
     .text(ticks_to_time)
+    .attr("textLength", (d) -> ticks_to_time(d).length * hPxPerLetterSm)
 
   [left, right] = if is_blue_left then [referee.blue, referee.yellow] else [referee.yellow, referee.blue]
 
   svg.select(".left-name").datum(left)
     .text((d) -> d.name)
+    .attr("textLength", (d) -> d.name.length * hPxPerLetter)
 
   svg.select(".right-name").datum(right)
     .text((d) -> d.name)
+    .attr("textLength", (d) -> d.name.length * hPxPerLetter)
 
   persistTip("#{stg2txt(referee.stage)}: #{cmd2txt(referee.command)}")
   window.referee = referee
@@ -445,7 +460,6 @@ pad = (n, width, z) ->
 # Time voodoo: converting ticks to minutes:seconds
 #XXX: tried to use moment.js without success
 ticks_to_time = (ticks) ->
-  #TODO: time may be negative, ought to represent that
   if ticks?
     time = "#{pad(~~(Math.abs(ticks) / (60 * 1000000)), 2, " ")}:#{pad(Math.abs(~~(ticks / 1000000)) % 60, 2)}"
     if ticks > 0 then time else "-#{time}"
@@ -458,14 +472,15 @@ svg.append("path").classed("field-line", true)
 svg.append("path").classed("left-goal", true)
 svg.append("path").classed("right-goal", true)
 svg.append("text").classed("time-left", true)
+  .attr("lengthAdjust", "spacingAndGlyphs")
 svg.append("text").classed("team-name", true)
   .classed("left-name", true)
   .attr("text-anchor", "start")
-  .attr("alignment-baseline", "hanging")
+  .attr("lengthAdjust", "spacingAndGlyphs")
 svg.append("text").classed("team-name", true)
   .classed("right-name", true)
   .attr("text-anchor", "end")
-  .attr("alignment-baseline", "hanging")
+  .attr("lengthAdjust", "spacingAndGlyphs")
 
 # draw default sized field
 drawField(default_geometry_field)
