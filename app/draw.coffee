@@ -261,6 +261,14 @@ drawField = (field_geometry, is_blue_left=true) ->
     .attr("x", (f) -> f.field_length / 2 - sp)
     .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
 
+  f.select(".left-score")
+    .attr("x", (f) -> -sp)
+    .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
+
+  f.select(".right-score")
+    .attr("x", (f) -> sp)
+    .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
+
 # in miliseconds
 max_screen_time = 100
 
@@ -359,6 +367,12 @@ drawReferee = (referee, is_blue_left) ->
   svg.select(".right-name").datum(right)
     .text((d) -> d.name)
     .attr("textLength", (d) -> d.name.length * hPxPerLetter)
+
+  svg.select(".left-score").datum(left)
+    .text((d) -> d.score)
+
+  svg.select(".right-score").datum(right)
+    .text((d) -> d.score)
 
   persistTip("#{stg2txt(referee.stage)}: #{cmd2txt(referee.command)}")
   window.referee = referee
@@ -481,6 +495,12 @@ svg.append("text").classed("team-name", true)
   .classed("right-name", true)
   .attr("text-anchor", "end")
   .attr("lengthAdjust", "spacingAndGlyphs")
+svg.append("text").classed("team-name", true)
+  .classed("left-score", true)
+  .attr("text-anchor", "end")
+svg.append("text").classed("team-name", true)
+  .classed("right-score", true)
+  .attr("text-anchor", "start")
 
 # draw default sized field
 drawField(default_geometry_field)
