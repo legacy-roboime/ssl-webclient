@@ -191,6 +191,8 @@ $("#file-input").on "change", (e) ->
   # MUST read as ArrayBuffer, unhide the play/pause button
   log_reader.readAsArrayBuffer(f) for f in e.target.files
 
+  window.target = e.target
+
 # ---------------------------
 
 #socket = io.connect('http://ssl-webclient.roboime.com:8888/')
