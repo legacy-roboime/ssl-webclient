@@ -358,7 +358,7 @@ drawReferee = (referee, is_blue_left) ->
     .text(ticks_to_time)
     .attr("textLength", (d) -> ticks_to_time(d).length * hPxPerLetterSm)
 
-  [left, right] = if is_blue_left then [referee.blue, referee.yellow] else [referee.yellow, referee.blue]
+  [right, left] = if is_blue_left then [referee.blue, referee.yellow] else [referee.yellow, referee.blue]
 
   svg.select(".left-name").datum(left)
     .text((d) -> d.name)
