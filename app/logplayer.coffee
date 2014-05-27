@@ -20,8 +20,10 @@ utils = require("./utils")
 class LogPlayer
 
   header = "SSL_LOG_FILE"
-  vision_builder = ProtoBuf.protoFromFile("protos/messages_robocup_ssl_wrapper.proto").build("SSL_WrapperPacket")
-  refbox_builder = ProtoBuf.protoFromFile("protos/referee.proto").build("SSL_Referee")
+  #XXX: ProtoBuf incorrectly assumes nodejs when loaded on a web worker, this is a hack to circumvent that
+  ProtoBuf.Util.IS_NODE = false
+  vision_builder = ProtoBuf.loadProtoFile("protos/messages_robocup_ssl_wrapper.proto").build("SSL_WrapperPacket")
+  refbox_builder = ProtoBuf.loadProtoFile("protos/referee.proto").build("SSL_Referee")
 
   constructor: (file, @progress_step=10000) ->
 
@@ -48,8 +50,9 @@ class LogPlayer
     unless (ver = @check_version()) == 1
       throw new Error("Unsupported log format version #{ver}")
 
-    @now = +new Date()
+    #TODO: use this to calculate average lag
     @avgr = utils.sma(100)
+
 
   check_type: ->
     decodeURIComponent(String.fromCharCode.apply(null, Array.prototype.slice.apply(new Uint8Array(@buffer, 0, header.length)))) is header
@@ -62,32 +65,37 @@ class LogPlayer
   parse_packet: ->
     # TODO: worry about endianess
     offset = @offset
-    timestamp = new Date(Long.fromBits(@dataview.getUint32(@offset + 4), @dataview.getUint32(@offset)).toNumber() / 1000 / 1000)
-    type = @dataview.getUint32(@offset + 8)
-    size = @dataview.getUint32(@offset + 12)
+    if @new_offset
+      offset = @new_offset
+      @new_offset = null
+
+    timestamp = new Date(Long.fromBits(@dataview.getUint32(offset + 4), @dataview.getUint32(offset)).toNumber() / 1000 / 1000)
+    type = @dataview.getUint32(offset + 8)
+    size = @dataview.getUint32(offset + 12)
+
     switch type
       when 1
         # TODO: try to identify packet type
         packet = "TODO"
       when 2
-        packet = vision_builder.decode(@buffer.slice(@offset + 16, @offset + 16 + size))
+        packet = vision_builder.decode(@buffer.slice(offset + 16, offset + 16 + size))
       when 3
         try
-          packet = refbox_builder.decode(@buffer.slice(@offset + 16, @offset + 16 + size))
+          packet = refbox_builder.decode(@buffer.slice(offset + 16, offset + 16 + size))
         catch e
           console.log(e)
       else
         packet = "UNSUPPORTED"
-    @offset += 16 + size
-    return {
-      timestamp: timestamp
-      type: type
-      packet: packet
-      offset: offset
-    }
-    # stubs
-    @cb = ->
-    @done = ->
+    @offset = offset + 16 + size
+
+    timestamp: timestamp
+    type: type
+    packet: packet
+    offset: offset
+
+  # stubs
+  @cb = ->
+  @done = ->
 
   all: (cb, done=->) ->
     while @offset < @buffer.byteLength - 1
@@ -102,8 +110,9 @@ class LogPlayer
     @offset = header.length + 4
 
   pause: ->
-    clearTimeout(@_next)
-    @playing = false
+    if @playing
+      @playing = false
+      clearTimeout(@_next)
 
   start: (cb, done=->) ->
     @cb = cb
@@ -114,40 +123,40 @@ class LogPlayer
     @pause()
     @rewind()
 
-  jump: (offset) ->
-    @pause
-    setTimeout(=>
-      @offset = offset
-      @play()
-    , 300)
+  jump: (pos) ->
+    @new_offset = @offsets[pos].offset
+    # send some packages to update even if paused
+    # and store on previous to avoid a long timeout
+    # due to the big difference in timestamps
+    for _ in [0...5]
+      @previous = @parse_packet()
+      @cb.call(this, @previous)
 
   play: ->
-    @playing = true
-    @_tick(@cb, @done)
+    unless @playing
+      @playing = true
+      @_tick()
 
-  _tick: (cb, done) ->
-    unless @previous
-      @_next = setTimeout (=> @_tick(cb)), 1 / 120
+  _tick: () ->
+    t0 = new Date()
+    if not @previous? and @playing
+      @_next = setTimeout (=> @_tick()), 1 / 120
       @previous = @parse_packet()
-      cb.call(this, @previous)
+      @cb.call(this, @previous)
 
     else if @offset < @buffer.byteLength - 1 and @playing
-      @previous = @previous || @parse_packet()
       @current = @parse_packet()
       # this block has to run as fast as possible
-      @before = @now
-      @now = +new Date()
-      delta = (@current.timestamp - @previous.timestamp) - (@now - @before)
-      if delta < 0
-        delta = 0
-      @_next = setTimeout (=> @_tick(cb)), delta
+      delta = Math.max(@current.timestamp - @previous.timestamp - (new Date() - t0), 0)
+      @_next = setTimeout (=> @_tick()), delta
       # until here
       @previous = @current
-      cb.call(this, @current)
+      @cb.call(this, @current)
+      if delta > 500
+        console.warn "big timeout (#{delta}ms) is this ok?"
 
     else
       @done.call(this)
-      console.log("stopped")
 
   cache_offsets: (cb, done=->) ->
     @offsets = []
@@ -158,7 +167,7 @@ class LogPlayer
       @offset += 16 + size
       packet =
         timestamp: timestamp
-        packet: packet
+        #packet: packet
         offset: offset
       @offsets.push(packet)
       #@last_progress = @progress_step

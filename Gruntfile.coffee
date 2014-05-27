@@ -76,6 +76,10 @@ module.exports = (grunt) ->
         src: "app/client.coffee"
         dest: "public/client.js"
 
+      logworker:
+        src: "app/logworker.coffee"
+        dest: "public/logworker.js"
+
       options:
         transform: [
           "coffeeify"
