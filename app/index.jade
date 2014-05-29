@@ -38,19 +38,47 @@ html(lang="en")
           span.progress-desc(style="position: absolute")
           .parse-progress.progress-bar.progress-bar-info(role="progressbar", aria-valuenow="45", aria-valuemin="0", aria-valuemax="100")
           .load-progress.progress-bar.progress-bar-success(role="progressbar", aria-valuenow="45", aria-valuemin="0", aria-valuemax="100")
-      .col-md-5
-        a.control.btn.btn-default.play-btn(data-toggle="tooltip", title="Play/pause log file", data-placement="bottom", style="display: none")
+      .col-md-5.dropdown
+        a.control.btn.btn-default.play-btn(data-tooltip, title="Play/pause log file", data-placement="bottom", style="display: none")
           i.fa.fa-play
-        a.control.btn.btn-default.file-btn(data-toggle="tooltip", title="Open a local log file", data-placement="bottom")
+        a.control.btn.btn-default.file-btn(data-tooltip, title="Open a local log file", data-placement="bottom")
           i.fa.fa-file
-        a.control.btn.btn-default.fullscreen-btn(data-toggle="tooltip", title="Fullscreen", data-placement="bottom")
+        a.control.btn.btn-default.conf-btn(data-tooltip, title="Settings", data-placement="bottom", data-toggle="dropdown", data-target="#")
+          i.fa.fa-gear
+        a.control.btn.btn-default.info-btn(data-tooltip, title="About", data-placement="bottom", data-toggle="modal", data-target="#infoModal")
+          i.fa.fa-info-circle
+        a.control.btn.btn-default.fullscreen-btn(data-tooltip, title="Fullscreen", data-placement="bottom")
           i.fa.fa-arrows-alt
+        ul.control.dropdown-menu(role="menu")
+          li(role="presentation")
+            a(role="menuitem", tabindex="-1", href="#") Action
+          li(role="presentation")
+            a(role="menuitem", tabindex="-1", href="#") Another action
+          li(role="presentation")
+            a(role="menuitem", tabindex="-1", href="#") Something else here
+          li.divider(role="presentation")
+          li(role="presentation")
+            a(role="menuitem", tabindex="-1", href="#") Separated link
 
+  // the command console
   if config.console
     .jscli-container
       #wrap.jscli-wrap
         output#output.jscli
         input#input.jscli
+
+  // the modal window
+  #infoModal.control.modal.fade(tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type="button", data-dismiss="modal", aria-hidden="true") &#215;
+          h4.modal-title Modal title
+        .modal-body
+          | ...
+        .modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") Close
+          button.btn.btn-primary(type="button") Save changes
 
   script(src="client.js")
   script(src="lib/js/bootstrap.min.js")

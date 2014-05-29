@@ -1,3 +1,13 @@
+$orange = #ff931f
+$orange2 = #c57a29
+$yellow = #ede528
+$yellow2 = #d5c512
+$blue = #3276b1
+$blue2 = #285e8e
+$field_green = #080
+$white = #efefef
+$black = #030303
+
 @font-face
   font-family 'Inconsolata'
   font-style normal
@@ -13,7 +23,7 @@ body
 
 .controls
   width 30%
-  min-width 400px
+  min-width 510px
 
   .control
     pointer-events all
@@ -23,6 +33,9 @@ body
 
   .btn
     margin 0 2px 0
+
+.modal
+  pointer-events all
 
 input.form-control[type="range"]
   box-shadow none
@@ -65,7 +78,7 @@ input.form-control[type="range"]
   height 100%
   width 100%
   z-index -1
-  background #080
+  background $field_green
   pointer-events all
 
 .robot
@@ -78,27 +91,33 @@ input.form-control[type="range"]
   &:hover
     cursor default
     path
-      stroke black
+      stroke $black
       stroke-width 5px
 
-.ball:hover
-  stroke black
-  stroke-width 5px
+path.yellow, .yellow path
+  fill $yellow
+  stroke $yellow2
+  stroke-width 5
 
-.yellow
-  fill #ff0
-
-.blue
-  fill #00f
+path.blue, .blue path
+  fill $blue
+  stroke $blue2
+  stroke-width 5
 
 .ball
-  fill #fb0
+  fill $orange
+  stroke $orange2
+  stroke-width 5
+
+  &:hover
+    stroke $black
+    stroke-width 5px
 
 .grass
-  fill #080
+  fill $field_green
 
 .field-line
-  fill #fff
+  fill $white
 
 .time-left
   fill rgba(0, 0, 0, 0.4)
@@ -110,8 +129,11 @@ input.form-control[type="range"]
   fill rgba(0, 0, 0, 0.4)
   font-size 300px
 
+path.left-goal, path.right-goal
+  stroke none
+
 .grid
-  stroke black
+  stroke $black
   stroke-width 1px
   stroke-opacity 0.8
 
@@ -119,7 +141,12 @@ input.form-control[type="range"]
   text-rendering optimizeLegibility
   text-shadow 0 0 5px rgba(255, 255, 255, 0.7)
   font-size 16px
-  color black
+  color $black
+
+.inactive
+  opacity: 0.15
+  &.ball
+    opacity: 0.25
 
 .jscli
   font-size 14px

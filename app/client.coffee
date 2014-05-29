@@ -140,7 +140,7 @@ socket.on "cmd_packet", (packet) ->
     jscli.print "<span class=\"#{span_class}\">#{packet.out}</span>"
 
 $ ->
-  $("[data-toggle='tooltip']").tooltip()
+  $("[data-tooltip]").tooltip()
 
   $(".fullscreen-btn").click ->
     if screenfull.enabled
