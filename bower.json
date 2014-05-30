@@ -1,13 +1,16 @@
 {
   "name": "ssl-webclient",
-  "dist": ["./dist/**"],
+  "dist": [
+    "./dist/**"
+  ],
   "ignore": [
-      "**/.*"
+    "**/.*"
   ],
   "dependencies": {
     "bootstrap": ">=3.0.2",
     "font-awesome": "~4.0",
-    "jscli": "vialink/jscli#v0.0.2"
+    "jscli": "vialink/jscli#v0.0.2",
+    "github-fork-ribbon-css": "~0.1.0"
   },
   "exportsOverride": {
     "bootstrap": {
@@ -22,6 +25,9 @@
     "jscli": {
       "js": "js/*.js",
       "css": "css/*.css"
+    },
+    "github-fork-ribbon-css": {
+      "css": "*.css"
     }
   }
 }

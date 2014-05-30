@@ -5,6 +5,7 @@ html(lang="en")
   link(rel="stylesheet", href="lib/css/bootstrap.min.css")
   link(rel="stylesheet", href="lib/css/bootstrap-theme.min.css")
   link(rel="stylesheet", href="lib/css/font-awesome.min.css")
+  link(rel="stylesheet", href="lib/css/gh-fork-ribbon.css")
   link(rel="stylesheet", href="lib/css/jscli.css")
   link(rel="stylesheet", href="style.css")
 
@@ -71,14 +72,36 @@ html(lang="en")
   #infoModal.control.modal.fade(tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
     .modal-dialog
       .modal-content
+        .github-fork-ribbon-wrapper.right
+          .github-fork-ribbon
+            a(href="https://github.com/roboime/ssl-webclient", target="_blank") Fork me on GitHub
         .modal-header
-          button.close(type="button", data-dismiss="modal", aria-hidden="true") &#215;
-          h4.modal-title Modal title
+          h4.modal-title About
         .modal-body
-          | ...
+          p Fusce ac libero ac nunc eleifend scelerisque.
+          p Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nullam et turpis pretium, adipiscing tellus in, ultrices lorem. Integer at est massa.
+          p Donec luctus accumsan pretium. Curabitur iaculis, nisi et aliquam adipiscing, eros turpis rhoncus felis, a blandit purus nisl a lectus. Aenean et sodales augue. Nunc quis ipsum sapien. Morbi laoreet leo venenatis dictum posuere. Nullam non ultrices lacus, nec facilisis justo.
         .modal-footer
+          a.roboime-logo.pull-left(href="http://www.roboime.com/")
+            svg(xmlns="http://www.w3.org/2000/svg", width="108px", height="30px", viewbox="0 0 324 90")
+              path(fill-rule="evenodd", fill="#a3ded9", d="M289.989,13.497l-21.121,12.196l10.56,6.099l10.562-6.099l11.04,5.821\
+              l10.086-5.821L289.989,13.497L289.989,13.497z M24.744,25.693l-10.562,6.099l21.125,12.194V31.792L24.744,25.693L24.744,25.693z\
+              M61.709,25.692L82.833,37.89l-10.562,6.096l-10.563-6.097l-10.562,6.097L40.586,37.89L61.709,25.692L61.709,25.692z\
+              M109.688,25.693l-10.563,6.098V13.497l-10.562,6.136c0,8.13,0,10.125,0,18.256l10.562,6.097l10.563-6.097l10.563,6.097\
+              l10.561-6.097L109.688,25.693L109.688,25.693z M157.606,25.692l21.122,12.197l-10.56,6.096l-10.562-6.097l-10.564,6.097\
+              L136.48,37.89L157.606,25.692L157.606,25.692z M194.297,25.711l-10.563,6.099V19.613L194.297,25.711L194.297,25.711z\
+              M199.784,25.693l10.561-6.098l21.123,12.196l21.125-12.196l10.56,6.098L242.031,37.89l0,0l-10.561,6.097L199.784,25.693z")
+              path(fill-rule="evenodd", fill="#1a7190", d="M14.184,31.793v36.586l10.56,6.097V37.89L14.184,31.793L14.184,31.793z\
+              M289.989,37.89l21.126-12.196V37.89l-21.126,12.193l-10.562-6.097v12.195l10.562,6.099l21.126-12.194V62.28l-21.126,12.195\
+              L268.868,62.28V25.693l10.56,6.099l0.002,0L289.989,37.89L289.989,37.89z M252.593,31.792c0.003,0,0,39.131,0,42.684l10.56-6.097\
+              V25.693L252.593,31.792L252.593,31.792z M199.782,68.379V25.693l10.563,6.099c0,14.228,0,28.457,0,42.684L199.782,68.379\
+              L199.782,68.379z M183.737,31.808v42.695l10.56-6.15V25.711L183.737,31.808L183.737,31.808z M178.728,37.889L178.728,37.889\
+              l-10.56,6.097v12.196l-10.562,6.099l-10.563-6.099V43.985L136.48,37.89V62.28l21.125,12.195l21.122-12.195V37.889L178.728,37.889\
+              L178.728,37.889L178.728,37.889z M88.564,37.89V62.28l21.124,12.195l21.124-12.195V37.89l-10.561,6.097l-0.001,12.197\
+              l-10.562,6.097l-10.563-6.097V43.986L88.564,37.89L88.564,37.89z M82.833,37.889L82.833,37.889l-10.562,6.097v12.196L61.709,62.28\
+              l-10.562-6.099V43.985L40.586,37.89V62.28l21.123,12.195L82.833,62.28V37.889L82.833,37.889L82.833,37.889z")
           button.btn.btn-default(type="button", data-dismiss="modal") Close
-          button.btn.btn-primary(type="button") Save changes
+          //button.btn.btn-primary(type="button") Save changes
 
   script(src="client.js")
   script(src="lib/js/bootstrap.min.js")
