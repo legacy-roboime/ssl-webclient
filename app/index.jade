@@ -1,7 +1,7 @@
 doctype 5
 html(lang="en")
   meta(charset="utf-8")
-  title The game is on!
+  title ssl-webclient
   link(rel="stylesheet", href="lib/css/bootstrap.min.css")
   link(rel="stylesheet", href="lib/css/bootstrap-theme.min.css")
   link(rel="stylesheet", href="lib/css/font-awesome.min.css")
@@ -12,23 +12,6 @@ html(lang="en")
   #field
 
   #info.container
-
-    //ul.breadcrumb
-      li
-        span#team_blue
-          span.team_name --
-          &nbsp;
-          span.score.badge -
-        span &nbsp;&times;&nbsp;
-        span#team_yellow
-          span.score.badge -
-          &nbsp;
-          span.team_name --
-      li
-        i.fa.fa-time
-        &nbsp;
-        span#time_left --
-
     input.hide#file-input(type="file")
     .info.row.pull-left
       .tip
@@ -76,13 +59,18 @@ html(lang="en")
           .github-fork-ribbon
             a(href="https://github.com/roboime/ssl-webclient", target="_blank") Fork me on GitHub
         .modal-header
+          button.close(type="button", data-dismiss="modal", aria-hidden="true") &#215;
           h4.modal-title About
         .modal-body
+          p
+            | Official logs can be found
+            a(href="http://robocupssl.cpe.ku.ac.th/gamelogs#available_log_files") here
+          p This project aims to provide a visualizer for the.
           p Fusce ac libero ac nunc eleifend scelerisque.
           p Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nullam et turpis pretium, adipiscing tellus in, ultrices lorem. Integer at est massa.
           p Donec luctus accumsan pretium. Curabitur iaculis, nisi et aliquam adipiscing, eros turpis rhoncus felis, a blandit purus nisl a lectus. Aenean et sodales augue. Nunc quis ipsum sapien. Morbi laoreet leo venenatis dictum posuere. Nullam non ultrices lacus, nec facilisis justo.
         .modal-footer
-          a.roboime-logo.pull-left(href="http://www.roboime.com/")
+          a.roboime-logo.pull-left(href="http://www.roboime.com/", target="_blank")
             svg(xmlns="http://www.w3.org/2000/svg", width="108px", height="30px", viewbox="0 0 324 90")
               path(fill-rule="evenodd", fill="#a3ded9", d="M289.989,13.497l-21.121,12.196l10.56,6.099l10.562-6.099l11.04,5.821\
               l10.086-5.821L289.989,13.497L289.989,13.497z M24.744,25.693l-10.562,6.099l21.125,12.194V31.792L24.744,25.693L24.744,25.693z\
