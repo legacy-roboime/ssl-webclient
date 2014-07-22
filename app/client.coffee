@@ -135,6 +135,7 @@ socket.on "refbox_packet", (packet) ->
   painter.updateReferee packet
 
 socket.on "cmd_packet", (packet) ->
+  # then it's a command packet, this is not great but it's OK
   span_class = if packet.ok is true then "success" else if packet.ok is false then "fail" else ""
   if jscli?
     jscli.print "<span class=\"#{span_class}\">#{packet.out}</span>"

@@ -23,8 +23,9 @@ config = require("config")
 
 zmq_subscriber = zmq.socket("sub")
 zmq_pusher = zmq.socket("push")
-zmq_subscriber.connect config.zmq.sub
+# subscriber listens instead of connecting
 zmq_subscriber.subscribe ""
+zmq_subscriber.connect config.zmq.sub
 zmq_pusher.connect config.zmq.push
 console.log "cli subcribed to #{config.zmq.sub}"
 console.log "cli pushing to #{config.zmq.push}"
@@ -76,6 +77,11 @@ zmq_subscriber.on "message", (packet) ->
   if debug
     console.log packet.toString()
   try
-    io.sockets.emit "cmd_packet", JSON.parse((packet || "").toString())
+    packet = JSON.parse((packet || "").toString())
+    if packet.detection
+      #io.sockets.emit "vision_packet", JSON.parse((packet || "").toString())
+      io.sockets.emit "vision_packet", packet
+    else
+      io.sockets.emit "cmd_packet", packet
   catch e
     console.log e

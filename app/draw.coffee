@@ -23,7 +23,8 @@ options =
   is_blue_left: true
   show_frame_skip: false
   show_trail: false
-  ignore_cams: []
+  #ignore_cams: [0, 1, 2, 3]
+  ignore_cams: ["intel"]
   vflip: 1
   hflip: 1
   xyswitch: false
@@ -36,6 +37,16 @@ getx = (p) ->
 
 gety = (p) ->
   -options.vflip * (if options.xyswitch then p.x else p.y)
+
+geta = (p) ->
+  a = -180 * p.orientation / Math.PI
+  if options.xyswitch
+    a = 90 - a
+  if options.hflip is -1
+    a = 180 - a
+  if options.vflip is -1
+    a = 360 - a
+  a
 
 
 svg = do ->
@@ -52,6 +63,9 @@ svg = do ->
         svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
       ))
   _svg.append("g")
+
+global.svg = svg
+global.d3 = d3
 
 default_geometry_field =
   line_width: 10
@@ -191,7 +205,7 @@ robot_path = (r) ->
   """
 
 robot_transform = (r) ->
-  "rotate(#{(-180 * r.orientation / Math.PI).toFixed(4)}, #{getx(r).toFixed(4)}, #{gety(r).toFixed(4)})"
+  "rotate(#{(geta(r)).toFixed(4)}, #{getx(r).toFixed(4)}, #{gety(r).toFixed(4)})"
 
 ball_radius = 21.5
 
@@ -301,7 +315,7 @@ drawField = (field_geometry) ->
     .attr("x", (f) -> sp)
     .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
 
-max_frame_distance = 2
+max_frame_distance = 5
 
 # robot hover tooltip
 numFormat = "0"
@@ -340,7 +354,7 @@ drawRobots = (robots, color, timestamp, camera_id, frame_number) ->
     .classed("active", not options.show_trail)
     .classed("inactive", options.show_trail)
     .classed(color, true)
-    .on("mouseover", (d) -> showTip("#{color} #{d.robot_id} (#{numeral(d.x).format(numFormat)},#{numeral(d.y).format(numFormat)})"))
+    .on("mouseover", (d) -> showTip("#{color} #{d.robot_id} (#{numeral(d.x).format(numFormat)},#{numeral(d.y).format(numFormat)})" + if d.skill then " " + d.skill.name else ""))
     .on("mouseout", -> restTip())
   g.append("path")
     .attr("d", robot_path)

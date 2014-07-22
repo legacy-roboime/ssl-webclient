@@ -36,3 +36,5 @@ referee:
   address: "224.5.23.1"
   port: 10003
   #port: 11003
+
+ga: true
