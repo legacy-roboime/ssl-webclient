@@ -19,6 +19,36 @@ $ = require("jquery")
 inner_width = 7500
 inner_height = 5500
 
+options =
+  is_blue_left: true
+  show_frame_skip: false
+  show_trail: false
+  #ignore_cams: [0, 1, 2, 3]
+  ignore_cams: ["intel"]
+  vflip: 1
+  hflip: 1
+  xyswitch: false
+
+global.options = options
+
+
+getx = (p) ->
+  options.hflip * (if options.xyswitch then p.y else p.x)
+
+gety = (p) ->
+  -options.vflip * (if options.xyswitch then p.x else p.y)
+
+geta = (p) ->
+  a = -180 * p.orientation / Math.PI
+  if options.xyswitch
+    a = 90 - a
+  if options.hflip is -1
+    a = 180 - a
+  if options.vflip is -1
+    a = 360 - a
+  a
+
+
 svg = do ->
   _svg = d3.select("#field").append("svg")
     .attr("viewBox", "-#{inner_width / 2} -#{inner_height / 2} #{inner_width} #{inner_height}")
@@ -33,6 +63,9 @@ svg = do ->
         svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
       ))
   _svg.append("g")
+
+global.svg = svg
+global.d3 = d3
 
 default_geometry_field =
   line_width: 10
@@ -129,6 +162,12 @@ field_path = (g) ->
   # done
   path
 
+field_transform = (r) ->
+  if options.xyswitch
+    "rotate(-90)"
+  else
+    "rotate(0)"
+
 left_goal_path = (g) ->
   """
   M-#{g.field_length / 2}-#{g.goal_width / 2 + g.goal_wall_width / 2}
@@ -159,14 +198,14 @@ robot_front_cut = 65
 
 robot_path = (r) ->
   """
-  M #{r.x.toFixed(4)} #{(-r.y).toFixed(4)}
+  M #{getx(r).toFixed(4)} #{gety(r).toFixed(4)}
   m #{robot_front_cut} #{Math.sqrt(robot_radius * robot_radius - robot_front_cut * robot_front_cut).toFixed(4)}
   a #{robot_radius} #{robot_radius} 0 1 1 0-#{2 * robot_front_cut}
   z
   """
 
 robot_transform = (r) ->
-  "rotate(#{(-180 * r.orientation / Math.PI).toFixed(4)}, #{r.x.toFixed(4)}, #{(-r.y).toFixed(4)})"
+  "rotate(#{(geta(r)).toFixed(4)}, #{getx(r).toFixed(4)}, #{gety(r).toFixed(4)})"
 
 ball_radius = 21.5
 
@@ -175,11 +214,11 @@ robot_label = (r) ->
 
 transitionDuration = 750
 
-drawField = (field_geometry, is_blue_left=true) ->
+drawField = (field_geometry) ->
 
   # spacing between lines
   r = 100
-  s = field_geometry.boundary_width / r
+  s = 1 + field_geometry.boundary_width / r
   fw = s + field_geometry.field_width / r / 2 | 0
   fl = s + field_geometry.field_length / r / 2 | 0
   grid = svg.select(".grid")
@@ -190,6 +229,7 @@ drawField = (field_geometry, is_blue_left=true) ->
     .attr("y1", (d) -> d * r)
     .attr("x2", fl * r)
     .attr("y2", (d) -> d * r)
+    .attr("transform", field_transform)
 
   gh.enter()
     .append("line")
@@ -198,6 +238,7 @@ drawField = (field_geometry, is_blue_left=true) ->
     .attr("y1", (d) -> d * r)
     .attr("x2", fl * r)
     .attr("y2", (d) -> d * r)
+    .attr("transform", field_transform)
 
   gh.exit()
     .remove()
@@ -208,6 +249,7 @@ drawField = (field_geometry, is_blue_left=true) ->
     .attr("y1", fw * -r)
     .attr("x2", (d) -> d * r)
     .attr("y2", fw * r)
+    .attr("transform", field_transform)
 
   gv.enter()
     .append("line")
@@ -216,6 +258,7 @@ drawField = (field_geometry, is_blue_left=true) ->
     .attr("y1", fw * -r)
     .attr("x2", (d) -> d * r)
     .attr("y2", fw * r)
+    .attr("transform", field_transform)
 
   gv.exit()
     .remove()
@@ -226,20 +269,23 @@ drawField = (field_geometry, is_blue_left=true) ->
     .transition()
     .duration(transitionDuration)
     .attr("d", field_path)
+    .attr("transform", field_transform)
 
   f.select(".left-goal")
-    .classed("blue", is_blue_left)
-    .classed("yellow", not is_blue_left)
+    .classed("blue", options.is_blue_left)
+    .classed("yellow", not options.is_blue_left)
     .transition()
     .duration(transitionDuration)
     .attr("d", left_goal_path)
+    .attr("transform", field_transform)
 
   f.select(".right-goal")
-    .classed("blue", not is_blue_left)
-    .classed("yellow", is_blue_left)
+    .classed("blue", not options.is_blue_left)
+    .classed("yellow", options.is_blue_left)
     .transition()
     .duration(transitionDuration)
     .attr("d", right_goal_path)
+    .attr("transform", field_transform)
 
   sp = 25
 
@@ -269,8 +315,7 @@ drawField = (field_geometry, is_blue_left=true) ->
     .attr("x", (f) -> sp)
     .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
 
-# in miliseconds
-max_screen_time = 100
+max_frame_distance = 5
 
 # robot hover tooltip
 numFormat = "0"
@@ -288,77 +333,98 @@ persistTip = (text) ->
   persistentText = text
   $(".tip").html(text) unless tipBusy
 
-drawRobots = (robots, color, timestamp) ->
-  timestampify(robots, timestamp)
-
-  robot = svg.selectAll(".robot.#{color}").data(robots, (d) -> d.robot_id)
+drawRobots = (robots, color, timestamp, camera_id, frame_number) ->
+  robot = svg.selectAll(".active.robot.#{color}").data(robots, (d) -> d.robot_id)
   robot.select("path")
     .attr("d", robot_path)
     .attr("transform", robot_transform)
   robot.select("text")
     .text(robot_label)
-    .attr("x", (r) -> r.x)
-    .attr("y", (r) -> -r.y)
+    .attr("x", (r) -> getx(r))
+    .attr("y", (r) -> gety(r))
+
+  if options.show_trail
+    robot
+      .classed("active", false)
+      .classed("inactive", true)
 
   g = robot.enter()
     .append("g")
     .classed("robot", true)
+    .classed("active", not options.show_trail)
+    .classed("inactive", options.show_trail)
     .classed(color, true)
-    .on("mouseover", (d) -> showTip("#{color} #{d.robot_id} (#{numeral(d.x).format(numFormat)},#{numeral(d.y).format(numFormat)})"))
+    .on("mouseover", (d) -> showTip("#{color} #{d.robot_id} (#{numeral(d.x).format(numFormat)},#{numeral(d.y).format(numFormat)})" + if d.skill then " " + d.skill.name else ""))
     .on("mouseout", -> restTip())
   g.append("path")
     .attr("d", robot_path)
     .attr("transform", robot_transform)
   g.append("text")
     .text(robot_label)
-    .attr("x", (r) -> r.x)
-    .attr("y", (r) -> -r.y)
+    .attr("x", (r) -> getx(r))
+    .attr("y", (r) -> gety(r))
 
-  robot.exit()
+  robot_exit = robot.exit()
     .filter (d) ->
       # delete if either it doesn't have a timestamp, its screen time has expired
-      # or its timestamp is at the future
-      not d.timestamp? or timestamp - d.timestamp > max_screen_time or d.timestamp > timestamp
-    .remove()
+      # or its timestamp is at the future, but not if it's a different camera
+      Math.abs(frame_number - d.frame_number) > max_frame_distance and d.camera_id is camera_id
+
+  if options.show_frame_skip
+    robot_exit.classed("active", false)
+    robot_exit.classed("inactive", true)
+  else
+    robot_exit.remove()
 
 
-drawBalls = (balls, timestamp) ->
-  timestampify(balls, timestamp)
+drawBalls = (balls, timestamp, camera_id, frame_number) ->
 
-  ball = svg.selectAll(".ball")
+  ball = svg.selectAll(".ball.active")
     .data(balls)
 
   ball
-    .attr("cx", (b) -> b.x)
-    .attr("cy", (b) -> -b.y)
+    .attr("cx", (b) -> getx(b))
+    .attr("cy", (b) -> gety(b))
+
+  if options.show_trail
+    ball
+      .classed("active", false)
+      .classed("inactive", true)
 
   ball.enter()
     .append("circle")
     .classed("ball", true)
+    .classed("active", not options.show_trail)
+    .classed("inactive", options.show_trail)
     .attr("r", ball_radius)
-    .attr("cx", (b) -> b.x)
-    .attr("cy", (b) -> -b.y)
+    .attr("cx", (b) -> getx(b))
+    .attr("cy", (b) -> gety(b))
     .on("mouseover", (d) -> showTip("ball (#{numeral(d.x).format(numFormat)},#{numeral(d.y).format(numFormat)})"))
     .on("mouseout", -> restTip())
 
-  ball.exit()
+  ball_exit = ball.exit()
     .filter (d) ->
       # delete if either it doesn't have a timestamp, its screen time has expired
-      # or its timestamp is at the future
-      not d.timestamp? or timestamp - d.timestamp > max_screen_time or d.timestamp > timestamp
-    .remove()
+      # or its timestamp is at the future, but not if it's a different camera
+      #(not d.timestamp? or timestamp - d.timestamp > max_screen_time or d.timestamp > timestamp) and d.camera_id isnt camera_id
+      Math.abs(frame_number - d.frame_number) > max_frame_distance and d.camera_id is camera_id
+  if options.show_frame_skip
+    ball_exit.classed("active", false)
+    ball_exit.classed("inactive", true)
+  else
+    ball_exit.remove()
 
 hPxPerLetter = 156
 vPxPerLetter = 250
 hPxPerLetterSm = 93
 
-drawReferee = (referee, is_blue_left) ->
+drawReferee = (referee) ->
   #d3.select("#time_left").datum(referee).html((d) -> ticks_to_time(d.stage_time_left))
   svg.select(".time-left").datum(referee.stage_time_left)
     .text(ticks_to_time)
     .attr("textLength", (d) -> ticks_to_time(d).length * hPxPerLetterSm)
 
-  [left, right] = if is_blue_left then [referee.blue, referee.yellow] else [referee.yellow, referee.blue]
+  [right, left] = if options.is_blue_left then [referee.blue, referee.yellow] else [referee.yellow, referee.blue]
 
   svg.select(".left-name").datum(left)
     .text((d) -> d.name)
@@ -506,7 +572,7 @@ svg.append("text").classed("team-name", true)
 drawField(default_geometry_field)
 
 class Painter
-  constructor: (@is_blue_left=false) ->
+  constructor: ->
     @detection = null
     @drawDetection = false
     @geometry = null
@@ -522,23 +588,40 @@ class Painter
       drawField @geometry.field
     if @drawReferee
       @drawReferee = false
-      drawReferee @referee, @is_blue_left
+      drawReferee @referee
     if @drawDetection
       @drawDetection = false
-      drawRobots @detection.robots_yellow, "yellow", @timestamp
-      drawRobots @detection.robots_blue, "blue", @timestamp
-      drawBalls  @detection.balls, @timestamp
-    requestAnimationFrame => @_draw()
+      for robot in @detection.robots_yellow
+        robot.timestamp = @detection.t_capture
+        robot.camera_id = @detection.camera_id
+        robot.frame_number = @detection.frame_number
+        robot.color = "yellow"
+      for robot in @detection.robots_blue
+        robot.timestamp = @detection.t_capture
+        robot.camera_id = @detection.camera_id
+        robot.frame_number = @detection.frame_number
+        robot.color = "blue"
+      for ball in @detection.balls
+        ball.timestamp = @detection.t_capture
+        ball.camera_id = @detection.camera_id
+        ball.frame_number = @detection.frame_number
+      drawRobots @detection.robots_yellow, "yellow", @detection.t_capture, @detection.camera_id, @detection.frame_number
+      drawRobots @detection.robots_blue, "blue", @detection.t_capture, @detection.camera_id, @detection.frame_number
+      drawBalls  @detection.balls, @detection.t_capture, @detection.camera_id, @detection.frame_number
+    #requestAnimationFrame => @_draw()
 
   updateVision: (packet, @timestamp=new Date()) ->
 
     if packet.detection
-      @detection = packet.detection
-      @drawDetection = true
+      unless packet.detection.camera_id in options.ignore_cams
+        @detection = packet.detection
+        @drawDetection = true
 
     if packet.geometry
       @geometry = packet.geometry
       @drawField = true
+
+    @_draw()
 
   updateReferee: (@referee, @timestamp=new Date()) ->
     @drawReferee = true

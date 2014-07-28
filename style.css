@@ -1,83 +1,97 @@
 
-/* line 149 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+/* line 188 : /Users/jan/Projects/ssl-webclient/app/style.styl */
 
 /* line 2 : /Users/jan/Projects/ssl-webclient/node_modules/grunt-contrib-stylus/node_modules/stylus/lib/functions/index.styl */
 
-/* line 1 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+/* line 16 : /Users/jan/Projects/ssl-webclient/app/style.styl */
 @font-face{font-family:'Inconsolata';font-style:normal;font-weight:400;src:local('Inconsolata'),url("inconsolata.woff") format('woff')}
-/* line 7 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+/* line 22 : /Users/jan/Projects/ssl-webclient/app/style.styl */
 body{background:none;font-family:'Inconsolata';pointer-events:none;height:100%;width:100%}
-/* line 14 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.controls{width:30%;min-width:400px;}
-/* line 18 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+/* line 29 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.controls{width:30%;min-width:510px;}
+/* line 33 : /Users/jan/Projects/ssl-webclient/app/style.styl */
 .controls .control{pointer-events:all}
-/* line 21 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.controls [class*="col-"]{padding:1px}
-/* line 24 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.controls .btn{margin:0 2px 0}
-/* line 27 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-input.form-control[type="range"]{box-shadow:none;padding-left:0;padding-right:0}
-/* line 32 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.progress .progress-desc{position:absolute;left:2px}
 /* line 36 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-#info{pointer-events:none;padding-top:5px;}
-/* line 40 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-#info .breadcrumb{display:inline-block}
-/* line 43 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-
-/* line 44 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-#team_blue .team_name{text-shadow:#99e 0 0 1px}
-/* line 46 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-#team_blue .badge{background-color:#99e}
-/* line 49 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-
+.controls [class*="col-"]{padding:1px}
+/* line 39 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.controls .btn{margin:0 2px 0}
+/* line 42 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.modal{pointer-events:all}
+/* line 45 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+input.form-control[type="range"]{box-shadow:none;padding-left:0;padding-right:0}
 /* line 50 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-#team_yellow .team_name{text-shadow:#ee6 0 0 1px}
-/* line 52 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-#team_yellow .badge{background-color:#ee6}
-/* line 55 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-#team_blue .badge,#team_yellow .badge{text-shadow:rgba(0,0,0,0.6) 0 0 3px;box-shadow:rgba(0,0,0,0.4) 0 0 3px}
-/* line 59 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-#field{position:fixed;top:0;left:0;bottom:0;right:0;height:100%;width:100%;z-index:-1;background:#080;pointer-events:all}
-/* line 71 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.progress .progress-desc{position:absolute;left:2px}
+/* line 54 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+#info{pointer-events:none;padding-top:5px;}
+/* line 58 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+#info .breadcrumb{display:inline-block}
+/* line 61 : /Users/jan/Projects/ssl-webclient/app/style.styl */
 
-/* line 72 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+/* line 62 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+#team_blue .team_name{text-shadow:#99e 0 0 1px}
+/* line 64 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+#team_blue .badge{background-color:#99e}
+/* line 67 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+
+/* line 68 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+#team_yellow .team_name{text-shadow:#ee6 0 0 1px}
+/* line 70 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+#team_yellow .badge{background-color:#ee6}
+/* line 73 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+#team_blue .badge,#team_yellow .badge{text-shadow:rgba(0,0,0,0.6) 0 0 3px;box-shadow:rgba(0,0,0,0.4) 0 0 3px}
+/* line 77 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+#field{position:fixed;top:0;left:0;bottom:0;right:0;height:100%;width:100%;z-index:-1;background:#19770f;pointer-events:all}
+/* line 89 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+
+/* line 90 : /Users/jan/Projects/ssl-webclient/app/style.styl */
 .robot text{fill:#000;font-size:120px;text-anchor:middle;alignment-baseline:central}
-/* line 78 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+/* line 96 : /Users/jan/Projects/ssl-webclient/app/style.styl */
 .robot:hover{cursor:default;}
-/* line 80 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.robot:hover path{stroke:#000;stroke-width:5px}
-/* line 84 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.ball:hover{stroke:#000;stroke-width:5px}
-/* line 88 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.yellow{fill:#ff0}
-/* line 91 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.blue{fill:#00f}
-/* line 94 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.ball{fill:#fb0}
-/* line 97 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.grass{fill:#080}
-/* line 100 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.field-line{fill:#fff}
-/* line 103 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.time-left{fill:rgba(0,0,0,0.4);font-size:180px;text-anchor:middle;white-space:pre}
-/* line 109 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.team-name{fill:rgba(0,0,0,0.4);font-size:300px}
-/* line 113 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.grid{stroke:#000;stroke-width:1px;stroke-opacity:.8}
-/* line 118 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.tip{text-rendering:optimizeLegibility;text-shadow:0 0 5px rgba(255,255,255,0.7);font-size:16px;color:#000}
-/* line 124 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-.jscli{font-size:14px;max-height:86px;}
-/* line 128 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-output.jscli{padding:0;max-height:126px}
-/* line 132 : /Users/jan/Projects/ssl-webclient/app/style.styl */
-input.jscli{line-height:14px;outline:none}
+/* line 98 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.robot:hover path{stroke:#030303;stroke-width:5px}
+/* line 121 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+path.yellow,.yellow path{fill:#ede528;stroke:#d5c512;stroke-width:5}
+/* line 125 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+path.blue,.blue path{fill:#3276b1;stroke:#285e8e;stroke-width:5}
+/* line 129 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.ball{fill:#ff931f;stroke:#c57a29;stroke-width:5;}
+/* line 133 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.ball:hover{stroke:#030303;stroke-width:5px}
 /* line 136 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.grass{fill:#19770f}
+/* line 138 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.field-line{fill:#efefef}
+/* line 140 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.time-left{fill:rgba(0,0,0,0.4);font-size:180px;text-anchor:middle;white-space:pre}
+/* line 145 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.team-name{fill:rgba(0,0,0,0.4);font-size:300px}
+/* line 148 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+path.left-goal,path.right-goal{stroke:none}
+/* line 150 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.grid{stroke:#030303;stroke-width:1px;stroke-opacity:.8}
+/* line 154 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.tip{text-rendering:optimizeLegibility;text-shadow:0 0 5px rgba(255,255,255,0.7);font-size:16px;color:#030303}
+/* line 159 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.inactive{opacity:.15;}
+/* line 161 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.inactive.ball{opacity:.25}
+/* line 163 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.jscli{font-size:14px;max-height:86px;}
+/* line 166 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+output.jscli{padding:0;max-height:126px}
+/* line 169 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+input.jscli{line-height:14px;outline:none}
+/* line 172 : /Users/jan/Projects/ssl-webclient/app/style.styl */
 .jscli .success{color:#98f3ae}
-/* line 139 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+/* line 174 : /Users/jan/Projects/ssl-webclient/app/style.styl */
 .jscli .fail{color:#f7aaaa}
-/* line 142 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+/* line 176 : /Users/jan/Projects/ssl-webclient/app/style.styl */
 .jscli-wrap{background:rgba(0,0,0,0.5);width:600px;pointer-events:all}
-/* line 147 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+/* line 180 : /Users/jan/Projects/ssl-webclient/app/style.styl */
 .jscli-container{pointer-events:none}
+/* line 182 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.github-fork-ribbon{background-color:#333;}
+/* line 184 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.github-fork-ribbon:hover{background-color:#666}
+/* line 186 : /Users/jan/Projects/ssl-webclient/app/style.styl */
+.github-fork-ribbon a,.github-fork-ribbon a:hover{font:inherit}
