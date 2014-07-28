@@ -20,3 +20,4 @@ bower_components/
 public/
 config
 !config/default.yaml
+.grunt/

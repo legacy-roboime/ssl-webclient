@@ -125,6 +125,11 @@ module.exports = (grunt) ->
         files:
           "public/style.css": "app/style.styl"
 
+    "gh-pages":
+      options:
+        base: "public"
+      src: ["**"]
+
   # These plugins provide necessary tasks.
   grunt.loadNpmTasks "grunt-contrib-copy"
   grunt.loadNpmTasks "grunt-contrib-clean"
@@ -134,9 +139,11 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks "grunt-browserify"
   grunt.loadNpmTasks "grunt-contrib-jade"
   grunt.loadNpmTasks "grunt-contrib-stylus"
+  grunt.loadNpmTasks "grunt-gh-pages"
 
   # Default task is compiling
   grunt.registerTask "app", ["browserify", "jade", "stylus", "copy"]
   grunt.registerTask "default", ["bower", "app"]
   grunt.registerTask "run", ["default", "develop:server", "watch"]
   grunt.registerTask "tunneler", ["develop:tunneler", "watch:tunneler"]
+  grunt.registerTask "publish", ["default", "gh-pages"]
