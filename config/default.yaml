@@ -38,3 +38,9 @@ referee:
   #port: 11003
 
 ga: true
+
+package:
+  win: false
+  osx: false
+  linux32: false
+  linux64: false

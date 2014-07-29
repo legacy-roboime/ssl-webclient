@@ -12,7 +12,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 ###
 
+config = require("config")
+
 module.exports = (grunt) ->
+
+  # Automatically load grunt tasks
+  require('load-grunt-tasks')(grunt)
 
   # Project configuration.
   grunt.initConfig
@@ -114,7 +119,7 @@ module.exports = (grunt) ->
         options:
           pretty: true
           data: ->
-            config: require("config")
+            config: config
         files:
           "public/index.html": "app/index.jade"
 
@@ -130,16 +135,34 @@ module.exports = (grunt) ->
         base: "public"
       src: ["**"]
 
-  # These plugins provide necessary tasks.
-  grunt.loadNpmTasks "grunt-contrib-copy"
-  grunt.loadNpmTasks "grunt-contrib-clean"
-  grunt.loadNpmTasks "grunt-contrib-watch"
-  grunt.loadNpmTasks "grunt-develop"
-  grunt.loadNpmTasks "grunt-bower-task"
-  grunt.loadNpmTasks "grunt-browserify"
-  grunt.loadNpmTasks "grunt-contrib-jade"
-  grunt.loadNpmTasks "grunt-contrib-stylus"
-  grunt.loadNpmTasks "grunt-gh-pages"
+    nodewebkit:
+      options:
+        #version: "0.9.2"
+        build_dir: "./build"
+        #keep_nw: true
+        win: config.package.win
+        mac: config.package.osx
+        linux32: config.package.linux32
+        linux64: config.package.linux64
+      src: [
+        "./AUTHORS"
+        "./CNAME"
+        "./Gruntfile.coffee"
+        "./LICENSE"
+        "./Procfile"
+        "./README.md"
+        "./app"
+        "./assets"
+        "./bin"
+        "./bower.json"
+        "./config"
+        './node_modules/**'
+        '!./node_modules/*grunt*/**'
+        '!./node_modules/coffeify/**'
+        "./package.json"
+        "./public/**"
+        "./src/**"
+      ]
 
   # Default task is compiling
   grunt.registerTask "app", ["browserify", "jade", "stylus", "copy"]
@@ -147,3 +170,4 @@ module.exports = (grunt) ->
   grunt.registerTask "run", ["default", "develop:server", "watch"]
   grunt.registerTask "tunneler", ["develop:tunneler", "watch:tunneler"]
   grunt.registerTask "publish", ["default", "gh-pages"]
+  grunt.registerTask "package", ["default", "nodewebkit"]

@@ -21,3 +21,4 @@ public/
 config
 !config/default.yaml
 .grunt/
+build/

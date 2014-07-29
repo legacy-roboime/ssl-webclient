@@ -2,7 +2,12 @@
   "name": "ssl-webclient",
   "description": "WebSocket client for SSL vision.",
   "version": "0.1.0-beta",
-  "main": "./server/server.js",
+  "main": "app://host/public/index.html",
+  "window": {
+    "title": "ssl-webclient",
+    "resizable": true,
+    "position": "center"
+  },
   "homepage": "https://github.com/roboime/ssl-vision-webclient",
   "keywords": [
     "websocket",
@@ -47,7 +52,9 @@
     "grunt-browserify": "~2.1.0",
     "coffeeify": "~0.6.0",
     "grunt-contrib-stylus": "~0.16.0",
-    "grunt-gh-pages": "~0.9.1"
+    "grunt-gh-pages": "~0.9.1",
+    "grunt-node-webkit-builder": "~0.1.21",
+    "load-grunt-tasks": "~0.6.0"
   },
   "engines": {
     "node": ">= 0.10.0"
