@@ -38,3 +38,4 @@ referee:
   #port: 11003
 
 ga: true
+send_dummy: false

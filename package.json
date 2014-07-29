@@ -34,7 +34,8 @@
     "d3": "~3.4.8",
     "pako": "~0.2.1",
     "numeral": "~1.5.3",
-    "protobufjs": "~2.0.5"
+    "protobufjs": "~2.0.5",
+    "three": "~0.68.0"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

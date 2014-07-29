@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 
 express = require("express")
 socketio = require("socket.io")
+dummy = require("./dummy")
 
 zmq = require("zmq")
 
@@ -85,3 +86,9 @@ zmq_subscriber.on "message", (packet) ->
       io.sockets.emit "cmd_packet", packet
   catch e
     console.log e
+
+if config.send_dummy
+  setInterval(->
+    io.sockets.emit "vision_packet", dummy
+    dummy.detection.frame_number += 1
+  , 1000 / 60)

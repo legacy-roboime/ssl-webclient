@@ -15,12 +15,22 @@ GNU Affero General Public License for more details.
 $ = require("jquery")
 screenfull = require("screenfull")
 io = require("socket.io-client")
-{Painter} = require("./draw")
+{options} = require("./draw")
+PainterD3 = require("./draw-d3").Painter
+PainterThree = require("./draw-three").Painter
 
 # expose jquery so bootstrap doesn't go nuts
 window.jQuery = $
 
-painter = new Painter()
+painters =
+  d3: new PainterD3("#field-d3")
+  three: new PainterThree("#field-three")
+
+if options["3d"]
+  painter = painters.three
+else
+  painter = painters.d3
+painter.show()
 
 
 # helper for createing throttled get/set functions
