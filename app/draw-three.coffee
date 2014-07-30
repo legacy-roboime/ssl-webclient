@@ -15,7 +15,8 @@ GNU Affero General Public License for more details.
 #numeral = require("numeral")
 THREE = require("three")
 $ = require("jquery")
-require("./orbit-controls")
+#require("./orbit-controls")
+require("./three-controls")
 {options, default_geometry_field, cmd2txt, stg2txt} = require("./draw")
 
 # XXX for debugging only
