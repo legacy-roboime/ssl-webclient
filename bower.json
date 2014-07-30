@@ -10,7 +10,8 @@
     "bootstrap": ">=3.0.2",
     "font-awesome": "~4.0",
     "jscli": "vialink/jscli#v0.0.2",
-    "github-fork-ribbon-css": "~0.1.0"
+    "github-fork-ribbon-css": "~0.1.0",
+    "stats.js": "mrdoob/stats.js"
   },
   "exportsOverride": {
     "bootstrap": {
@@ -28,6 +29,9 @@
     },
     "github-fork-ribbon-css": {
       "css": "*.css"
+    },
+    "stats.js": {
+      "js": "build/*.js"
     }
   }
 }
