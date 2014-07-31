@@ -210,13 +210,14 @@ robot_label = (r) ->
 
 transitionDuration = 750
 
-drawField = (field_geometry) ->
-
+drawGrid = ->
   # spacing between lines
   r = 100
-  s = 1 + field_geometry.boundary_width / r
-  fw = s + field_geometry.field_width / r / 2 | 0
-  fl = s + field_geometry.field_length / r / 2 | 0
+  #s = 1 + field_geometry.boundary_width / r
+  #fw = s + field_geometry.field_width / r / 2 | 0
+  #fl = s + field_geometry.field_length / r / 2 | 0
+  fw = 200
+  fl = 200
   grid = svg.select(".grid")
 
   gh = grid.selectAll(".grid .hor-line")
@@ -258,6 +259,8 @@ drawField = (field_geometry) ->
 
   gv.exit()
     .remove()
+
+drawField = (field_geometry) ->
 
   f = svg.datum(field_geometry)
 
@@ -480,37 +483,60 @@ class Painter
     @container = d3.select(elem)
     init(@container)
 
-    # draw default sized field
-    drawField(default_geometry_field)
-    #@_draw()
+    # STATS
+    @stats = new Stats()
+    @stats.domElement.style.position = "absolute"
+    #@stats.domElement.style.top = "2px"
+    #@stats.domElement.style.left = "2px"
+    @stats.domElement.style.bottom = "2px"
+    @stats.domElement.style.right = "2px"
+    @stats.domElement.style.zIndex = 100
+    $(elem).append @stats.domElement
+    #@container.append @stats.domElement
 
-  _draw: ->
+    # draw default sized field
+    drawGrid()
+    drawField(default_geometry_field)
+    @render()
+
+  render: ->
+    requestAnimationFrame(=> @render()) unless @_stop
+
     if @drawField
       @drawField = false
+
       drawField @geometry.field
+
     if @drawReferee
       @drawReferee = false
+
       drawReferee @referee
+
     if @drawDetection
       @drawDetection = false
+
       for robot in @detection.robots_yellow
         robot.timestamp = @detection.t_capture
         robot.camera_id = @detection.camera_id
         robot.frame_number = @detection.frame_number
         robot.color = "yellow"
+
       for robot in @detection.robots_blue
         robot.timestamp = @detection.t_capture
         robot.camera_id = @detection.camera_id
         robot.frame_number = @detection.frame_number
         robot.color = "blue"
+
       for ball in @detection.balls
         ball.timestamp = @detection.t_capture
         ball.camera_id = @detection.camera_id
         ball.frame_number = @detection.frame_number
+
       drawRobots @detection.robots_yellow, "yellow", @detection.t_capture, @detection.camera_id, @detection.frame_number
       drawRobots @detection.robots_blue, "blue", @detection.t_capture, @detection.camera_id, @detection.frame_number
       drawBalls  @detection.balls, @detection.t_capture, @detection.camera_id, @detection.frame_number
-    #requestAnimationFrame => @_draw()
+
+    @stats.update()
 
   updateVision: (packet, @timestamp=new Date()) ->
 
@@ -523,16 +549,22 @@ class Painter
       @geometry = packet.geometry
       @drawField = true
 
-    @_draw()
+    #@render()
 
   updateReferee: (@referee, @timestamp=new Date()) ->
     @drawReferee = true
 
   hide: ->
     @container.classed("hide", true)
+    @stop()
 
   show: ->
     @container.classed("hide", false)
+    @start()
 
+  stop: -> @_stop = true
+  start: ->
+    @_stop = false
+    @render()
 
 exports.Painter = Painter

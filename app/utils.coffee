@@ -15,7 +15,8 @@ GNU Affero General Public License for more details.
 module.exports =
 
   options:
-    "3d": true
+    #painter: "d3"
+    painter: "three"
     is_blue_left: true
     show_frame_skip: false
     show_trail: false
@@ -133,6 +134,17 @@ module.exports =
 
       sum / n
 
+  # function to bind data in way that resembles d3
+  bind: (data,
+    enter: fenter,
+    update: fupdate,
+    exit: fexit
+  ) ->
+    fenter()
+    fupdate()
+    fexit()
+
 
 # XXX this is so options can be changes from browsers console
 global.options = module.exports.options
+global.utils = module.exports

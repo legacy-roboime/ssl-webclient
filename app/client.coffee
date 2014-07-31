@@ -26,11 +26,16 @@ painters =
   d3: new PainterD3("#field-d3")
   three: new PainterThree("#field-three")
 
-if options["3d"]
-  painter = painters.three
-else
-  painter = painters.d3
+lastPainter = options.painter
+painter = painters[lastPainter]
 painter.show()
+setInterval(->
+  if options.painter isnt lastPainter
+    lastPainter = options.painter
+    painter.hide()
+    painter = painters[lastPainter]
+    painter.show()
+, 500)
 
 
 # helper for createing throttled get/set functions

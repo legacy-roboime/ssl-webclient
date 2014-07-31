@@ -92,7 +92,6 @@ class Painter
     @renderer.autoClear = false
     #@renderer.shadowMapEnabled = true
     #@renderer.shadowMapType = THREE.PCFShadowMap
-    @clock = new THREE.Clock()
     @container.append @renderer.domElement
     window.addEventListener "resize", (=> @adjustSize()), false
 
@@ -111,8 +110,10 @@ class Painter
     # STATS
     @stats = new Stats()
     @stats.domElement.style.position = "absolute"
-    @stats.domElement.style.top = "2px"
-    @stats.domElement.style.left = "2px"
+    #@stats.domElement.style.top = "2px"
+    #@stats.domElement.style.left = "2px"
+    @stats.domElement.style.bottom = "2px"
+    @stats.domElement.style.right = "2px"
     @stats.domElement.style.zIndex = 100
     @container.append @stats.domElement
 
@@ -131,11 +132,10 @@ class Painter
     # draw default sized field
     @createScene()
     #@drawField(default_geometry_field)
-    @start()
+    #@start()
 
-  animate: ->
-    requestAnimationFrame(=> @animate()) unless @_stop
-    #delta = @clock.getDelta()
+  render: ->
+    requestAnimationFrame(=> @render()) unless @_stop
 
     if @shouldDrawField
       @shouldDrawField = false
@@ -178,13 +178,18 @@ class Painter
     @camera.updateProjectionMatrix()
     @renderer.setSize window.innerWidth, window.innerHeight
 
-  hide: -> @container.addClass("hide")
-  show: -> @container.removeClass("hide")
+  hide: ->
+    @container.addClass("hide")
+    @stop()
+
+  show: ->
+    @container.removeClass("hide")
+    @start()
 
   stop: -> @_stop = true
   start: ->
     @_stop = false
-    @animate()
+    @render()
 
   addLight: (dx, dy, dz, i) ->
     light = new THREE.DirectionalLight WHITE, i
