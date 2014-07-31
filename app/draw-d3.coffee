@@ -141,15 +141,15 @@ field_path = (g) ->
   """
   path += # left penalty spot
   """
-  M-#{g.field_length / 2 - g.penalty_spot_from_field_line_dist - g.line_width} 0
-  a #{1 * g.line_width} #{1 * g.line_width} 0 0 1 #{2 * g.line_width} 0
-  a #{1 * g.line_width} #{1 * g.line_width} 0 0 1-#{2 * g.line_width} 0
+  M-#{g.field_length / 2 - g.penalty_spot_from_field_line_dist + g.line_width / 2} 0
+  a #{g.line_width} #{g.line_width} 0 0 1 #{2 * g.line_width} 0
+  a #{g.line_width} #{g.line_width} 0 0 1-#{2 * g.line_width} 0
   """
   path += # right penalty spot
   """
-  M #{g.field_length / 2 - g.penalty_spot_from_field_line_dist - g.line_width} 0
-  a #{1 * g.line_width} #{1 * g.line_width} 0 0 1-#{2 * g.line_width} 0
-  a #{1 * g.line_width} #{1 * g.line_width} 0 0 1 #{2 * g.line_width} 0
+  M #{g.field_length / 2 - g.penalty_spot_from_field_line_dist + g.line_width / 2} 0
+  a #{g.line_width} #{g.line_width} 0 0 1-#{2 * g.line_width} 0
+  a #{g.line_width} #{g.line_width} 0 0 1 #{2 * g.line_width} 0
   """
   path += # close it
   """
@@ -166,7 +166,7 @@ field_transform = (r) ->
 
 left_goal_path = (g) ->
   """
-  M-#{g.field_length / 2}-#{g.goal_width / 2 + g.goal_wall_width / 2}
+  M-#{g.field_length / 2}-#{g.goal_width / 2 + g.goal_wall_width}
   h-#{g.goal_depth + g.goal_wall_width}
   v #{g.goal_width + 2 * g.goal_wall_width}
   h #{g.goal_depth + g.goal_wall_width}
@@ -178,7 +178,7 @@ left_goal_path = (g) ->
   """
 right_goal_path = (g) ->
   """
-  M #{g.field_length / 2}-#{g.goal_width / 2 + g.goal_wall_width / 2}
+  M #{g.field_length / 2}-#{g.goal_width / 2 + g.goal_wall_width}
   h #{g.goal_depth + g.goal_wall_width}
   v #{g.goal_width + 2 * g.goal_wall_width}
   h-#{g.goal_depth + g.goal_wall_width}
