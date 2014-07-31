@@ -46,17 +46,17 @@ class THREE.OrbitControls extends THREE.EventDispatcher
   zoomSpeed: 0.5
 
   # Limits to how far you can dolly in and out
-  minDistance: 59.5
-  maxDistance: 1187
+  minDistance: 0
+  maxDistance: Infinity
 
   # Set to true to disable this control
   noRotate: false
-  rotateSpeedLeft: 0.7
-  rotateSpeedUp: 0.05
+  rotateSpeedLeft: 1.0
+  rotateSpeedUp: 1.0
 
   # Set to true to disable this control
   noPan: false
-  panSpeed: 0.0563
+  panSpeed: 1.0
   keyPanSpeed: 7.0  # pixels moved per arrow key push
   fixedPanMatrix: [1, 0, 0, 0, 0, 0, -1]  # set to null to disabl
 

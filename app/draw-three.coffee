@@ -15,7 +15,6 @@ GNU Affero General Public License for more details.
 #numeral = require("numeral")
 THREE = require("three")
 $ = require("jquery")
-#require("./orbit-controls")
 require("./three-controls")
 {options, default_geometry_field, cmd2txt, stg2txt} = require("./draw")
 
@@ -25,33 +24,41 @@ global.THREE = THREE
 NEAR = 100
 MIDDLE = 200
 FAR = 700
-VERYFAR = 1200
+VERYFAR = 2200
 FOG_DENSITY = 0.0011
-FOG_START = 800
-FOG_FINISH = 1200
+FOG_START = 1700
+FOG_FINISH = 2200
 NULL_WIDTH = 0.1
+GOAL_HEIGHT = 16
+ZOOM_MIN = 96
+ZOOM_MAX = 1914
 
-ORANGE      = 0xFF931F
-ORANGE2     = 0xC57A29
-YELLOW      = 0xEDE528
-YELLOW2     = 0xD5C512
-BLUE        = 0x3276B1
-BLUE2       = 0x285E8E
-FIELD_GREEN = 0x19770F
-WHITE       = 0xEFEFEF
+ORANGE      = 0xff931f
+ORANGE2     = 0xc57a29
+YELLOW      = 0xede528
+YELLOW2     = 0xd5c512
+BLUE        = 0x3276b1
+BLUE2       = 0x285e8e
+FIELD_GREEN = 0x19770f
+WHITE       = 0xefefef
 BLACK       = 0x030303
-FOG_COLOR   = 0x0C3C08
+FOG_COLOR   = 0x0c3c08
 #GRID_COLOR  = 0x071a05
 #GRID_COLOR  = 0x145f0c
 GRID_COLOR  = 0x166b0d
-#GRID_COLOR  = 0x19770F
+#GRID_COLOR  = 0x19770f
 
 # scale
 s = (x) -> x / 10
 
+max_frame_distance = 5
+
 
 class Painter
   constructor: (elem) ->
+    # XXX for debugging:
+    global.painter = @
+
     @detection = null
     @shouldDrawDetection = false
     @geometry = null
@@ -63,31 +70,20 @@ class Painter
     @container = $(elem)
     @scene = new THREE.Scene()
 
-    # CAMERA
-    @camera = new THREE.PerspectiveCamera(49.6, window.innerWidth / window.innerHeight, 1, VERYFAR)
-    @camera.position.set(0, 595, 0)
-    #@camera.position.set(-50, 200, 200)
-    #@camera.rotation.set(-0.814, -0.136, -0.143)
-    global.painter = @
-
-    # CONTROLS
-    @controls = new THREE.OrbitControls(@camera)
-    @controls.damping = 0.001
-
     # TEST OBJECT
-    #geometry = new THREE.BoxGeometry 4, 4, 4
-    geometry = new THREE.SphereGeometry 2.15, 32, 16
-    #material = new THREE.MeshBasicMaterial color: ORANGE
-    #material = new THREE.MeshLambertMaterial color: ORANGE
-    material = new THREE.MeshPhongMaterial color: ORANGE
-    @mesh = new THREE.Mesh(geometry, material)
-    @mesh.position.set(0, 2.15, 0)
-    #@mesh.castShadow = true
-    #@mesh.receiveShadow = true
-    @scene.add(@mesh)
+    ##geometry = new THREE.BoxGeometry 4, 4, 4
+    #geometry = new THREE.SphereGeometry 2.15, 32, 16
+    ##material = new THREE.MeshBasicMaterial color: ORANGE
+    ##material = new THREE.MeshLambertMaterial color: ORANGE
+    #material = new THREE.MeshPhongMaterial color: ORANGE
+    #@mesh = new THREE.Mesh(geometry, material)
+    #@mesh.position.set(0, 2.15, 0)
+    ##@mesh.castShadow = true
+    ##@mesh.receiveShadow = true
+    #@scene.add(@mesh)
 
     # RENEDERER
-    #@renderer = new THREE.CanvasRenderer()
+    #@renderer = new THREE.CanvasRenderer antialias: true, alpha: true
     @renderer = new THREE.WebGLRenderer antialias: true, alpha: true
     @renderer.setSize window.innerWidth, window.innerHeight
     #@renderer.setClearColor FIELD_GREEN, 1
@@ -100,6 +96,18 @@ class Painter
     @container.append @renderer.domElement
     window.addEventListener "resize", (=> @adjustSize()), false
 
+    # CAMERA
+    @camera = new THREE.PerspectiveCamera 32, window.innerWidth / window.innerHeight, 1, VERYFAR
+    @camera.position.set(0, 959.5, 0)
+    #@camera.position.set(-50, 200, 200)
+    #@camera.rotation.set(-0.814, -0.136, -0.143)
+
+    # CONTROLS
+    @controls = new THREE.OrbitControls @camera, @renderer.domElement
+    @controls.minDistance = ZOOM_MIN
+    @controls.maxDistance = ZOOM_MAX
+    @controls.damping = 0.001
+
     # STATS
     @stats = new Stats()
     @stats.domElement.style.position = "absolute"
@@ -111,10 +119,14 @@ class Painter
     # MATERIALS
     #@lineMaterial = new THREE.MeshBasicMaterial color: WHITE
     @lineMaterial = new THREE.MeshLambertMaterial color: WHITE
+    @blueMaterial = new THREE.MeshLambertMaterial color: BLUE
+    @yellowMaterial = new THREE.MeshLambertMaterial color: YELLOW
     #@lineMaterial = new THREE.MeshPhongMaterial color: WHITE
     #@lineMaterial.reflectivity = 0
     #@lineMaterial.refractionRatio = 0
     #@lineMaterial.ambient = WHITE
+    @ballMaterial = new THREE.MeshPhongMaterial color: ORANGE
+    @ballGeometry = new THREE.SphereGeometry 2.15, 32, 16
 
     # draw default sized field
     @createScene()
@@ -127,23 +139,19 @@ class Painter
 
     if @shouldDrawField
       @shouldDrawField = false
-      drawField @geometry.field
+      @drawField @geometry.field
+
     if @shouldDrawReferee
       @shouldDrawReferee = false
-      drawReferee @referee
+      @drawReferee @referee
+
     if @shouldDrawDetection
       @shouldDrawDetection = false
-      for robot in @detection.robots_yellow
-        robot.frame_number = @detection.frame_number
-        robot.color = "yellow"
-      for robot in @detection.robots_blue
-        robot.frame_number = @detection.frame_number
-        robot.color = "blue"
-      for ball in @detection.balls
-        ball.frame_number = @detection.frame_number
-      #drawRobots @detection.robots_yellow, "yellow", @detection.t_capture, @detection.camera_id, @detection.frame_number
-      #drawRobots @detection.robots_blue, "blue", @detection.t_capture, @detection.camera_id, @detection.frame_number
-      #drawBalls  @detection.balls, @detection.t_capture, @detection.camera_id, @detection.frame_number
+
+      @lastFrame = @detection.frame_number
+      @drawRobots @detection.robots_yellow, "yellow"
+      @drawRobots @detection.robots_blue, "blue"
+      @drawBalls @detection.balls
 
     @controls.update()
     @stats.update()
@@ -159,8 +167,8 @@ class Painter
       @geometry = packet.geometry
       @shouldDrawField = true
 
-    @mesh.rotation.x += 0.01
-    @mesh.rotation.y += 0.02
+    #@mesh.rotation.x += 0.01
+    #@mesh.rotation.y += 0.02
 
   updateReferee: (@referee, @timestamp=new Date()) ->
     @shouldDrawReferee = true
@@ -188,11 +196,19 @@ class Painter
     #@scene.fog = new THREE.FogExp2 FOG_COLOR, FOG_DENSITY
 
     # LIGHTS
-    @addLight( 1,  1,  1, 1.54)
-    @addLight(-1, -1, -1, 0.3)
-    @addLight(-1, -1,  1, 0.3)
-    @addLight( 1, -1, -1, 0.3)
-    @addLight(-1,  1, -1, 0.3)
+    #@addLight( 1,  1,  1, 1.54)
+    # top, strong
+    @addLight( 1,  1, -1, 0.72)
+    @addLight(-1,  1, -1, 0.72)
+    # bottom, weak
+    @addLight(-1, -1,  1, 0.31)
+    @addLight( 1, -1,  1, 0.31)
+    # others, weaker
+    @addLight( 1,  1,  1, 0.19)
+    @addLight( 1, -1, -1, 0.19)
+    @addLight(-1,  1,  1, 0.19)
+    @addLight(-1, -1, -1, 0.19)
+
     #light = new THREE.DirectionalLight WHITE, 1.83
     #light.position.set(1, 1, 1).normalize()
     #@scene.add light
@@ -219,10 +235,18 @@ class Painter
     grid.setColors GRID_COLOR, GRID_COLOR
     @scene.add grid
 
+    # BASIC HOLDERS
+    @balls = []
+    @blueRobots = {}
+    @yellowRobots = {}
+
     # THE FIELD
     @addField(default_geometry_field)
 
   addField: (g) ->
+    @lastGeometryJSON = JSON.stringify(g)
+    @isBlueLeft = options.is_blue_left
+
     fieldGeom = new THREE.ShapeGeometry @fieldContourShape(g)
     @fieldMesh = new THREE.Mesh fieldGeom, @lineMaterial
     @fieldMesh.rotation.x = -Math.PI / 2
@@ -243,7 +267,7 @@ class Painter
 
     rSpotGeom = new THREE.ShapeGeometry @spotShape(g)
     @rSpotMesh = new THREE.Mesh rSpotGeom, @lineMaterial
-    @rSpotMesh.rotation.x = -Math.PI / 3
+    @rSpotMesh.rotation.x = -Math.PI / 2
     @rSpotMesh.position.y = NULL_WIDTH
     @rSpotMesh.position.x = s(g.field_length / 2 - g.penalty_spot_from_field_line_dist - g.line_width / 2)
     @scene.add @rSpotMesh
@@ -268,6 +292,19 @@ class Painter
     @lDefMesh.position.y = NULL_WIDTH
     @scene.add @lDefMesh
 
+    rGoalGeom = @goalGeom(g)
+    @rGoalMesh = new THREE.Mesh rGoalGeom, if @isBlueLeft then @yellowMaterial else @blueMaterial
+    @rGoalMesh.rotation.x = -Math.PI / 2
+    @rGoalMesh.position.y = NULL_WIDTH
+    @scene.add @rGoalMesh
+
+    lGoalGeom = @goalGeom(g)
+    @lGoalMesh = new THREE.Mesh lGoalGeom, if @isBlueLeft then @blueMaterial else @yellowMaterial
+    @lGoalMesh.rotation.x = -Math.PI / 2
+    @lGoalMesh.position.y = NULL_WIDTH
+    @lGoalMesh.rotation.z = Math.PI
+    @scene.add @lGoalMesh
+
   removeField: ->
     @scene.remove @fieldMesh
     @scene.remove @circleMesh
@@ -276,6 +313,21 @@ class Painter
     @scene.remove @lSpotMesh
     @scene.remove @rDefMesh
     @scene.remove @lDefMesh
+    @scene.remove @rGoalMesh
+    @scene.remove @lGoalMesh
+
+  goalGeom: (g) ->
+    goal = new THREE.Shape()
+    goal.moveTo s(g.field_length / 2), s(g.goal_width / 2)
+    goal.lineTo s(g.field_length / 2 + g.goal_depth), s(g.goal_width / 2)
+    goal.lineTo s(g.field_length / 2 + g.goal_depth), -s(g.goal_width / 2)
+    goal.lineTo s(g.field_length / 2), -s(g.goal_width / 2)
+    goal.lineTo s(g.field_length / 2), -s(g.goal_width / 2 + g.goal_wall_width)
+    goal.lineTo s(g.field_length / 2 + g.goal_depth + g.goal_wall_width), -s(g.goal_width / 2 + g.goal_wall_width)
+    goal.lineTo s(g.field_length / 2 + g.goal_depth + g.goal_wall_width), s(g.goal_width / 2 + g.goal_wall_width)
+    goal.lineTo s(g.field_length / 2), s(g.goal_width / 2 + g.goal_wall_width)
+    goal.lineTo s(g.field_length / 2), s(g.goal_width / 2)
+    goal.extrude amount: GOAL_HEIGHT, bevelEnabled: false
 
   defenseAreaShape: (g) ->
     area = new THREE.Shape()
@@ -332,9 +384,28 @@ class Painter
     shape
 
   drawField: (geometry) ->
+    if JSON.stringify(geometry) isnt @lastGeometryJSON or @isBlueLeft isnt options.is_blue_left
+      console.log 'hello'
+      @removeField()
+      @addField geometry
 
-    #@rectl
-    null
+  drawReferee: -> return
+  drawRobots: -> return
 
+  createBall: (b) ->
+    ball = new THREE.Mesh @ballGeometry, @ballMaterial
+    ball.position.set s(b.x), 2.15, -s(b.y)
+    ball.lastFrame = @lastFrame
+    ball
+
+  drawBalls: (balls) ->
+    for b in @balls
+      if Math.abs(b.lastFrame - @lastFrame) > max_frame_distance
+        @scene.remove b
+
+    for ball in balls
+      b = @createBall ball
+      @scene.add b
+      @balls.push b
 
 exports.Painter = Painter
