@@ -15,7 +15,7 @@ GNU Affero General Public License for more details.
 d3 = require("d3")
 numeral = require("numeral")
 $ = require("jquery")
-{options, default_geometry_field, cmd2txt, stg2txt} = require("./draw")
+{options, default_geometry_field, cmd2txt, stg2txt} = require("./utils")
 
 inner_width = 7500
 inner_height = 5500

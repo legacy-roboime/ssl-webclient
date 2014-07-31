@@ -15,7 +15,7 @@ GNU Affero General Public License for more details.
 $ = require("jquery")
 screenfull = require("screenfull")
 io = require("socket.io-client")
-{options} = require("./draw")
+{options} = require("./utils")
 PainterD3 = require("./draw-d3").Painter
 PainterThree = require("./draw-three").Painter
 

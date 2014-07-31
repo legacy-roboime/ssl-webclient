@@ -16,7 +16,7 @@ GNU Affero General Public License for more details.
 THREE = require("three")
 $ = require("jquery")
 require("./three-controls")
-{options, default_geometry_field, cmd2txt, stg2txt} = require("./draw")
+{options, default_geometry_field, cmd2txt, stg2txt} = require("./utils")
 
 # XXX for debugging only
 global.THREE = THREE
@@ -25,7 +25,7 @@ NEAR = 100
 MIDDLE = 200
 FAR = 700
 VERYFAR = 2200
-FOG_DENSITY = 0.0011
+#FOG_DENSITY = 0.0006
 FOG_START = 1700
 FOG_FINISH = 2200
 NULL_WIDTH = 0.1
@@ -118,9 +118,9 @@ class Painter
 
     # MATERIALS
     #@lineMaterial = new THREE.MeshBasicMaterial color: WHITE
-    @lineMaterial = new THREE.MeshLambertMaterial color: WHITE
-    @blueMaterial = new THREE.MeshLambertMaterial color: BLUE
-    @yellowMaterial = new THREE.MeshLambertMaterial color: YELLOW
+    @lineMaterial = new THREE.MeshPhongMaterial color: WHITE
+    @blueMaterial = new THREE.MeshPhongMaterial color: BLUE
+    @yellowMaterial = new THREE.MeshPhongMaterial color: YELLOW
     #@lineMaterial = new THREE.MeshPhongMaterial color: WHITE
     #@lineMaterial.reflectivity = 0
     #@lineMaterial.refractionRatio = 0
@@ -385,7 +385,7 @@ class Painter
 
   drawField: (geometry) ->
     if JSON.stringify(geometry) isnt @lastGeometryJSON or @isBlueLeft isnt options.is_blue_left
-      console.log 'hello'
+      #console.log 'hello'
       @removeField()
       @addField geometry
 
