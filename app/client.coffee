@@ -136,7 +136,10 @@ $(".file-btn").on "click", (e) ->
   $("#file-input").trigger("click")
 
 $("#file-input").on "change", (e) ->
-  log_worker.postMessage action: "load", files: e.target.files
+  # XXX the following doesn't work on Firefox
+  #log_worker.postMessage action: "load", files: e.target.files
+  # this does:
+  log_worker.postMessage action: "load", files: (f for f in e.target.files)
 
 # ---------------------------
 

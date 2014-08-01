@@ -17,7 +17,6 @@ pako = require("pako")
 {LogPlayer} = require("./logplayer")
 
 autoplay = true
-log_reader = new FileReader()
 log_player = null
 
 load_file = (file) ->
@@ -69,24 +68,35 @@ cacheOffsetCallback = (packet, byteLength) ->
   percentage = 100 * packet.offset / byteLength
   postMessage status: "cacheprogress", percentage: percentage
 
-# setup actions for when the file is loaded
-log_reader.onloadstart = ->
-  postMessage status: "started"
+if FileReader?
+  log_reader = new FileReader()
+  auto_load = false
 
-log_reader.onprogress = (e) ->
-  if e.lengthComputable
-    percentage = Math.round((e.loaded * 100) / e.total)
-    postMessage status: "progress", percentage: percentage
+  # setup actions for when the file is loaded
+  log_reader.onloadstart = ->
+    postMessage status: "started"
 
-log_reader.onload = (e) ->
-  load_file(@result)
+  log_reader.onprogress = (e) ->
+    if e.lengthComputable
+      percentage = Math.round((e.loaded * 100) / e.total)
+      postMessage status: "progress", percentage: percentage
+
+  log_reader.onload = (e) ->
+    load_file(@result)
+
+else
+  log_reader = new FileReaderSync()
+  auto_load = true
 
 global.onmessage = (e) ->
   switch e.data.action
     when "load"
       files = e.data.files
       # MUST read as ArrayBuffer, unhide the play/pause button
-      log_reader.readAsArrayBuffer(f) for f in files
+      for f in files
+        res = log_reader.readAsArrayBuffer f
+        load_file res if auto_load is true
+
     when "toggleplay"
       if log_player?
         if log_player.playing
