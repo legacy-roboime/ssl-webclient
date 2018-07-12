@@ -23,6 +23,7 @@ class LogPlayer
   #XXX: ProtoBuf incorrectly assumes nodejs when loaded on a web worker, this is a hack to circumvent that
   ProtoBuf.Util.IS_NODE = false
   vision_builder = ProtoBuf.loadProtoFile("protos/messages_robocup_ssl_wrapper.proto").build("SSL_WrapperPacket")
+  vision_legacy_builder = ProtoBuf.loadProtoFile("protos/messages_robocup_ssl_wrapper_legacy.proto").build("RoboCup2014Legacy.Wrapper.SSL_WrapperPacket")
   refbox_builder = ProtoBuf.loadProtoFile("protos/referee.proto").build("SSL_Referee")
 
   constructor: (file, @progress_step=10000) ->
@@ -78,12 +79,14 @@ class LogPlayer
         # TODO: try to identify packet type
         packet = "TODO"
       when 2
-        packet = vision_builder.decode(@buffer.slice(offset + 16, offset + 16 + size))
+        packet = vision_legacy_builder.decode(@buffer.slice(offset + 16, offset + 16 + size))
       when 3
         try
           packet = refbox_builder.decode(@buffer.slice(offset + 16, offset + 16 + size))
         catch e
           console.log(e)
+      when 4
+        packet = vision_builder.decode(@buffer.slice(offset + 16, offset + 16 + size))
       else
         packet = "UNSUPPORTED"
     @offset = offset + 16 + size
