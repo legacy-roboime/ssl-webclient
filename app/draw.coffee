@@ -97,13 +97,11 @@ field2014_path = (g) ->
     start_y = arc.center.y + arc.radius * Math.sin(arc.a2)
     end_x = arc.center.x + arc.radius * Math.cos(arc.a1)
     end_y = arc.center.y + arc.radius * Math.sin(arc.a1)
-    if (arc.a2 - arc.a1) > 3.14159
+    if (arc.a2 - arc.a1) > Math.PI
       large_arc = 1
     else
       large_arc = 0
     sweep = 0
-    # It's a circle and we can't draw a complete circle with one arc
-    #if (arc.a2 - arc.a1) < 6.2
     path +=
     """
 
