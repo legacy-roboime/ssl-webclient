@@ -57,6 +57,7 @@ slider_handler = new GetSetHandler((val) ->
 player_slider.bind "input", -> slider_handler.set()
 
 shouldRender = false
+timeOfPrev2014Packet = null
 playCallback = (p, pos) ->
   #console.log("render")
 
@@ -65,9 +66,14 @@ playCallback = (p, pos) ->
 
   switch p.type
     when 2
-      painter.updateVision p.packet, p.timestamp
+      # If a log has packet from both 2010 and 2014 we want to ignore 2010 packet
+      if timeOfPrev2014Packet == null or p.timestamp - timeOfPrev2014Packet > 1000
+        painter.updateVision2010 p.packet, p.timestamp
     when 3
       painter.updateReferee p.packet, p.timestamp
+    when 4
+      timeOfPrev2014Packet = p.timestamp
+      painter.updateVision2014 p.packet, p.timestamp
     else
       console.log p
 
