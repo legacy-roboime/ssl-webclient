@@ -86,10 +86,10 @@ default_geometry_field =
 field2014_path = (g) ->
   path = ""
   for line in g.field_lines
-    path += 
+    path +=
     """
     M #{line.p1.x} #{line.p1.y}
-    L #{line.p2.x} #{line.p2.y} 
+    L #{line.p2.x} #{line.p2.y}
     """
   for arc in g.field_arcs
     arc.a2 -= 0.001
@@ -295,9 +295,9 @@ drawField = (field_geometry, is_legacy) ->
 
   gv.exit()
     .remove()
-  
+
   f = svg.datum(field_geometry)
-  
+
   sp = 25
 
   f.select(".time-left")
@@ -312,13 +312,13 @@ drawField = (field_geometry, is_legacy) ->
     .attr("x", (f) -> -f.field_length / 2 + sp)
     .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
 
-  f.select(".right-name")   
-    .transition() 
+  f.select(".right-name")
+    .transition()
     .duration(transitionDuration)
     .attr("x", (f) -> f.field_length / 2 - sp)
     .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
 
-  f.select(".left-score")     
+  f.select(".left-score")
     .attr("x", (f) -> -sp)
     .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
 
@@ -343,7 +343,7 @@ drawField = (field_geometry, is_legacy) ->
     .attr("transform", field_transform)
 
   if is_legacy
-  
+
     f.select(".field-line")
       .transition()
       .duration(transitionDuration)
@@ -362,7 +362,7 @@ drawField = (field_geometry, is_legacy) ->
       .attr("stroke", "white")
       .attr("fill", "none")
       .attr("transform", field_transform)
-     
+
 max_frame_distance = 5
 
 # robot hover tooltip
@@ -666,7 +666,7 @@ class Painter
         @detection = packet.detection
         @drawDetection = true
 
-    if packet.geometry 
+    if packet.geometry
       @geometry = packet.geometry
       @isLegacyGeometry = true
       @drawField = true
