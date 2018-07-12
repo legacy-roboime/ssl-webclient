@@ -83,6 +83,37 @@ default_geometry_field =
   penalty_spot_from_field_line_dist: 450
   penalty_line_from_spot_dist: 350
 
+field2014_path = (g) ->
+  path = ""
+  for line in g.field_lines
+    path += 
+    """
+    M #{line.p1.x} #{line.p1.y}
+    L #{line.p2.x} #{line.p2.y} 
+    """
+  for arc in g.field_arcs
+    arc.a2 -= 0.001
+    start_x = arc.center.x + arc.radius * Math.cos(arc.a2)
+    start_y = arc.center.y + arc.radius * Math.sin(arc.a2)
+    end_x = arc.center.x + arc.radius * Math.cos(arc.a1)
+    end_y = arc.center.y + arc.radius * Math.sin(arc.a1)
+    if (arc.a2 - arc.a1) > 3.14159
+      large_arc = 1
+    else
+      large_arc = 0
+    sweep = 0
+    # It's a circle and we can't draw a complete circle with one arc
+    #if (arc.a2 - arc.a1) < 6.2
+    path +=
+    """
+
+    M #{start_x} #{start_y}
+    A #{arc.radius},#{arc.radius} 0 #{large_arc},#{sweep} #{end_x},#{end_y}
+    """
+
+
+  path
+
 field_path = (g) ->
   path = ""
   path += # outer rectangle
@@ -169,24 +200,27 @@ field_transform = (r) ->
     "rotate(0)"
 
 left_goal_path = (g) ->
+  goal_wall_width = 20
   """
-  M-#{g.field_length / 2}-#{g.goal_width / 2 + g.goal_wall_width / 2}
-  h-#{g.goal_depth + g.goal_wall_width}
-  v #{g.goal_width + 2 * g.goal_wall_width}
-  h #{g.goal_depth + g.goal_wall_width}
-  v-#{g.goal_wall_width}
+  M-#{g.field_length / 2}-#{g.goal_width / 2 + goal_wall_width / 2}
+  h-#{g.goal_depth + goal_wall_width}
+  v #{g.goal_width + 2 * goal_wall_width}
+  h #{g.goal_depth + goal_wall_width}
+  v-#{goal_wall_width}
   h-#{g.goal_depth}
   v-#{g.goal_width}
   h #{g.goal_depth}
   z
   """
 right_goal_path = (g) ->
+  goal_wall_width = 20
+
   """
-  M #{g.field_length / 2}-#{g.goal_width / 2 + g.goal_wall_width / 2}
-  h #{g.goal_depth + g.goal_wall_width}
-  v #{g.goal_width + 2 * g.goal_wall_width}
-  h-#{g.goal_depth + g.goal_wall_width}
-  v-#{g.goal_wall_width}
+  M #{g.field_length / 2}-#{g.goal_width / 2 + goal_wall_width / 2}
+  h #{g.goal_depth + goal_wall_width}
+  v #{g.goal_width + 2 * goal_wall_width}
+  h-#{g.goal_depth + goal_wall_width}
+  v-#{goal_wall_width}
   h #{g.goal_depth}
   v-#{g.goal_width}
   h-#{g.goal_depth}
@@ -214,7 +248,8 @@ robot_label = (r) ->
 
 transitionDuration = 750
 
-drawField = (field_geometry) ->
+
+drawField = (field_geometry, is_legacy) ->
 
   # spacing between lines
   r = 100
@@ -262,14 +297,36 @@ drawField = (field_geometry) ->
 
   gv.exit()
     .remove()
-
+  
   f = svg.datum(field_geometry)
+  
+  sp = 25
 
-  f.select(".field-line")
+  f.select(".time-left")
     .transition()
     .duration(transitionDuration)
-    .attr("d", field_path)
-    .attr("transform", field_transform)
+    .attr("x", 2)
+    .attr("y", (f) -> -f.field_width / 2 - sp)
+
+  f.select(".left-name")
+    .transition()
+    .duration(transitionDuration)
+    .attr("x", (f) -> -f.field_length / 2 + sp)
+    .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
+
+  f.select(".right-name")   
+    .transition() 
+    .duration(transitionDuration)
+    .attr("x", (f) -> f.field_length / 2 - sp)
+    .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
+
+  f.select(".left-score")     
+    .attr("x", (f) -> -sp)
+    .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
+
+  f.select(".right-score")
+    .attr("x", (f) -> sp)
+    .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
 
   f.select(".left-goal")
     .classed("blue", options.is_blue_left)
@@ -287,34 +344,27 @@ drawField = (field_geometry) ->
     .attr("d", right_goal_path)
     .attr("transform", field_transform)
 
-  sp = 25
+  if is_legacy
+  
+    f.select(".field-line")
+      .transition()
+      .duration(transitionDuration)
+      .attr("d", field_path)
+      .attr("stroke", "white")
+      .attr("fill", "white")
+      .attr("transform", field_transform)
 
-  f.select(".time-left")
-    .transition()
-    .duration(transitionDuration)
-    .attr("x", 2)
-    .attr("y", (f) -> -f.field_width / 2 - sp)
-
-  f.select(".left-name")
-    .transition()
-    .duration(transitionDuration)
-    .attr("x", (f) -> -f.field_length / 2 + sp)
-    .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
-
-  f.select(".right-name")
-    .transition()
-    .duration(transitionDuration)
-    .attr("x", (f) -> f.field_length / 2 - sp)
-    .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
-
-  f.select(".left-score")
-    .attr("x", (f) -> -sp)
-    .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
-
-  f.select(".right-score")
-    .attr("x", (f) -> sp)
-    .attr("y", (f) -> -f.field_width / 2 + sp + vPxPerLetter)
-
+  else
+     stroke_width = field_geometry.field_lines[0].thickness * 3
+     f.select(".field-line")
+      .transition()
+      .duration(transitionDuration)
+      .attr("d", field2014_path)
+      .attr("stroke-width", stroke_width)
+      .attr("stroke", "white")
+      .attr("fill", "none")
+      .attr("transform", field_transform)
+     
 max_frame_distance = 5
 
 # robot hover tooltip
@@ -569,13 +619,14 @@ svg.append("text").classed("team-name", true)
   .attr("text-anchor", "start")
 
 # draw default sized field
-drawField(default_geometry_field)
+drawField(default_geometry_field, true)
 
 class Painter
   constructor: ->
     @detection = null
     @drawDetection = false
     @geometry = null
+    @isLegacyGeometry = true
     @drawGeometry = false
     @referee = null
     @drawReferee = false
@@ -585,7 +636,7 @@ class Painter
   _draw: ->
     if @drawField
       @drawField = false
-      drawField @geometry.field
+      drawField(@geometry.field, @isLegacyGeometry)
     if @drawReferee
       @drawReferee = false
       drawReferee @referee
@@ -610,7 +661,21 @@ class Painter
       drawBalls  @detection.balls, @detection.t_capture, @detection.camera_id, @detection.frame_number
     #requestAnimationFrame => @_draw()
 
-  updateVision: (packet, @timestamp=new Date()) ->
+  updateVision2010: (packet, @timestamp=new Date()) ->
+
+    if packet.detection
+      unless packet.detection.camera_id in options.ignore_cams
+        @detection = packet.detection
+        @drawDetection = true
+
+    if packet.geometry 
+      @geometry = packet.geometry
+      @isLegacyGeometry = true
+      @drawField = true
+
+    @_draw()
+
+  updateVision2014: (packet, @timestamp=new Date()) ->
 
     if packet.detection
       unless packet.detection.camera_id in options.ignore_cams
@@ -619,6 +684,7 @@ class Painter
 
     if packet.geometry
       @geometry = packet.geometry
+      @isLegacyGeometry = false
       @drawField = true
 
     @_draw()

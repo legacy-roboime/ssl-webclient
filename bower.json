@@ -7,12 +7,16 @@
     "**/.*"
   ],
   "dependencies": {
-    "bootstrap": ">=3.0.2",
+    "popper.js": "=1.12.9",
+    "bootstrap": "=3.0.2",
     "font-awesome": "~4.0",
     "jscli": "vialink/jscli#v0.0.2",
     "github-fork-ribbon-css": "~0.1.0"
   },
   "exportsOverride": {
+    "popper.js": {
+      "js": "dist/umd/*.*"
+    },
     "bootstrap": {
       "js": "dist/js/*",
       "css": "dist/css/*",
