@@ -6,6 +6,17 @@ ssl-webclient-internal is a multi-user supporting web-based application for cont
 Getting Started
 ---------------
 
+### Docker
+The easiest way to run this client is to use a docker.
+To build the docker image do the following:
+```bash
+docker build -t ssl-webclient .
+```
+To run that docker image and launch a server on `127.0.0.1:8888`, do the following:
+```bash
+docker run -p 8888:8888 -it ssl-webclient
+```
+
 ### Requirements
 
 - [node.js](http://nodejs.org/)
