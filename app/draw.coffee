@@ -344,25 +344,26 @@ drawField = (field_geometry, is_legacy) ->
 
   if is_legacy
 
-    f.select(".field-line")
+    f.select(".field-line2010")
+      .attr("visibility", "visible")
       .transition()
       .duration(transitionDuration)
       .attr("d", field_path)
-      .attr("stroke", "white")
-      .attr("fill", "white")
       .attr("transform", field_transform)
 
+    f.select(".field-line2014").attr("visibility", "hidden")
+
   else
-     stroke_width = field_geometry.field_lines[0].thickness * 3
-     f.select(".field-line")
+     stroke_width = field_geometry.field_lines[0].thickness * 2
+     f.select(".field-line2014")
+      .attr("visibility", "visible")
       .transition()
       .duration(transitionDuration)
       .attr("d", field2014_path)
       .attr("stroke-width", stroke_width)
-      .attr("stroke", "white")
-      .attr("fill", "none")
       .attr("transform", field_transform)
-
+     
+     f.select(".field-line2010").attr("visibility", "hidden")
 max_frame_distance = 5
 
 # robot hover tooltip
@@ -596,7 +597,8 @@ ticks_to_time = (ticks) ->
 
 # initialize the field
 svg.append("g").classed("grid", true)
-svg.append("path").classed("field-line", true)
+svg.append("path").classed("field-line2014", true)
+svg.append("path").classed("field-line2010", true)
 svg.append("path").classed("left-goal", true)
 svg.append("path").classed("right-goal", true)
 svg.append("text").classed("time-left", true)
